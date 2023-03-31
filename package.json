@@ -1,0 +1,23 @@
+{
+  "name": "term-project-scuttle-crab",
+  "version": "1.0.0",
+  "description": "term-project-scuttle-crab created by GitHub Classroom",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/csc-667-spring-2023-roberts/term-project-scuttle-crab.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/csc-667-spring-2023-roberts/term-project-scuttle-crab/issues"
+  },
+  "homepage": "https://github.com/csc-667-spring-2023-roberts/term-project-scuttle-crab#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
