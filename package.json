@@ -4,7 +4,8 @@
   "description": "term-project-scuttle-crab created by GitHub Classroom",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon --watch backend ./server.js"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,11 @@
   },
   "homepage": "https://github.com/csc-667-spring-2023-roberts/term-project-scuttle-crab#readme",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "http-errors": "^2.0.0",
+    "pug": "^3.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
