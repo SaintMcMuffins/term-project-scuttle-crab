@@ -89,7 +89,7 @@ h2 {
   line-height: 10px;
   color: #000000;
 }
-.heading--primary {font-size: 2.5rem; padding-left: 25px;}
+.heading--primary {font-size: 2.5rem; padding-left: 35px;}
 .thumbnail__links {
   align-self: flex-end;
   width: 100%;
@@ -142,4 +142,11 @@ font-weight: 600;
 font-size: 10px;
 line-height: 39px;
 color: #272626;
+}
+
+.login__link {
+    color:#272626;
+    font-size: 14px;
+    text-align: center;
+    padding-left: 135px;
 }
