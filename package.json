@@ -11,7 +11,8 @@
     "build:dev": "webpack --watch",
     "db:create": "node-pg-migrate create -- ",
     "db:migrate": "node-pg-migrate up",
-    "db:rollback": "node-pg-migrate down"
+    "db:rollback": "node-pg-migrate down",
+    "postinstall": "npm run db:migrate"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
     "morgan": "^1.10.0",
     "node-pg-migrate": "^6.2.2",
     "pg": "^8.10.0",
+    "pg-promise": "^11.4.3",
     "pug": "^3.0.2"
   },
   "devDependencies": {
