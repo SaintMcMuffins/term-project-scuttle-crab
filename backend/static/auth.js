@@ -33,7 +33,7 @@ router.post("/register", async (request, response) => {
 router.post("/login", async (request, response) => {
     const { email, password} = request.body;
 try {
-    const user = await Useres.findByEmail(email);
+    const user = await Users.findByEmail(email);
 
     const isValidUser = await bcrypt.compare(password, user.password);
     if(isValidUser) {
