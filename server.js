@@ -26,7 +26,7 @@ if (process.env.NODE_ENV === "development") {
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
-app.use(cookieParser);
+app.use(cookieParser());
 app.set("views", path.join(__dirname, "backend", "views"));
 app.set("view engine", "pug");
 app.use(express.static(path.join(__dirname, "backend", "static")));
