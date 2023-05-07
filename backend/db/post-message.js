@@ -1,6 +1,7 @@
 //const express = require("express");
 //const router = express.Router();
-const db = require("../db/connections.js")
+const db = require("../db/connections.js");
+
 
 // TODO: Content may need to be filtered to avoid SQL injection
 

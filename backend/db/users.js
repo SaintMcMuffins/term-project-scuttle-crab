@@ -8,7 +8,7 @@ const create = (username, email, password) =>
     ]);
 
     const findByEmail = email =>
-    db.one("SELECT * FROM users WHERE Eemail=$1", [email]);
+    db.one("SELECT * FROM users WHERE email=$1", [email]);
     module.exports = {
         create,
         findByEmail
