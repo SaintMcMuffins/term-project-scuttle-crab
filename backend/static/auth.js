@@ -1,12 +1,12 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-const Users = require("../../db/users");
+const Users = require("../db/users");
 const router = express.Router();
 
 const SALT_ROUNDS = 10;
 
 router.get("/register", (request, response) => {
-    response.render("signup", { title: "Gin Rummy" });
+    response.render("register", { title: "Gin Rummy" });
 
 });
 
@@ -23,10 +23,13 @@ router.post("/register", async (request, response) => {
 
     try {
         const {id} = await Users.create(username, email, hash);
+
+        response.redirect("/login")
     } catch(error) {
-        response.render("signup", { title: "Gin Rummy", username, email, password, message: "Error",})
+        console.log(error)
+        response.render("register", { title: "Gin Rummy", username, email})
     }
-    response.render("signup", { title: "Gin Rummy" });
+   // response.render("signup", { title: "Gin Rummy" });
 
 });
 

@@ -26,7 +26,7 @@ exports.up = (pgm) => {
         notNull: true,
       },
       password:{
-          type: "varchar(20)",
+          type: "varchar(80)",
           notNull: true,
       }
     });
@@ -38,7 +38,7 @@ exports.up = (pgm) => {
           type: "serial"
         },
         content: {
-            type: "varchar(20)",
+            type: "varchar(100)",
             notNull: true,
         
         },
@@ -68,6 +68,6 @@ exports.up = (pgm) => {
    * @param {import("node-pg-migrate/dist/types").MigrationBuilder} pgm
    */
   exports.down = (pgm) => {
-    pgm.dropTable("users");
     pgm.dropTable("messages")
+    pgm.dropTable("users")
   };
