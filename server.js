@@ -49,9 +49,11 @@ const rootRoutes = require("./backend/routes/root");
 const chatRoutes = require("./backend/static/chat");
 const authRoutes = require("./backend/static/auth")
 
+
 app.use("/", rootRoutes);
 app.use("/chat", chatRoutes);
 app.use("/auth", authRoutes);
+
 
 
 app.use((request,response,next) => {

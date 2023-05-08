@@ -29,11 +29,7 @@ router.get("/login", (request, response) => {
       });
   });
 
-router.post("/auth/login", (request, response) =>{
-  console.log("Post request %s %s", request.body.username, request.body.password);
 
-  response.redirect('/');
-})
 
 
 

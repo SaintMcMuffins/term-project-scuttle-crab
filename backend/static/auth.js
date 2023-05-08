@@ -35,25 +35,23 @@ router.post("/register", async (request, response) => {
 
 router.post("/login", async (request, response) => {
     const { email, password} = request.body;
-try {
-    const user = await Users.findByEmail(email);
+    console.log("In the post request with ", email, password)
 
-    const isValidUser = await bcrypt.compare(password, user.password);
-    if(isValidUser) {
-        response.redirect("/lobby");
-    } else {
-        throw("User did not provide valid credentials");
+    try {
+        const {password: hash} = await Users.findByEmail(email);
+
+        const isValidUser = await bcrypt.compare(password, hash);
+        if(isValidUser) {
+            console.log("\n\nValid\n\n")
+            response.redirect("/lobby");
+        } else {
+            console.log("\n\n***Not valid user\n\n")
+            throw "User did not provide valid credentials";
+        }
+    } catch(error) {
+        console.log(error)
+        response.render("login", { title: "Gin Rummy", email, message: "error" });
     }
-} catch(error) {
-    response.render("login", { title: "Gin Rummy", email, message: "error" });
-}
-
-
-
-
-
-    response.render("login", { title: "Gin Rummy" });
-
 });
 
 module.exports = router;
