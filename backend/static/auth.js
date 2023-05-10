@@ -2,6 +2,33 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const Users = require("../db/users");
 const router = express.Router();
+const cookieParser = require("cookie-parser");
+const sessions = require('express-session');
+
+router.use(cookieParser());
+
+const oneDay = 1000 * 60 * 60 * 24;
+router.use(sessions({
+    secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
+    saveUninitialized:true,
+    cookie: { maxAge: oneDay },
+    resave: false 
+}));
+
+const auth = function(request, response, next) {
+  
+    if (request.session && (request.session.user === username) && request.session.admin)
+    {
+      return next();
+    }
+    else
+    {
+      return response.render('login.ejs', {error: ''});
+    }
+  };
+
+  
+var session;
 
 const SALT_ROUNDS = 10;
 
@@ -42,6 +69,9 @@ router.post("/login", async (request, response) => {
 
         const isValidUser = await bcrypt.compare(password, hash);
         if(isValidUser) {
+            session=request.session;
+            session.userid=request.body.email;
+            console.log(request.session)
             console.log("\n\nValid\n\n")
             response.redirect("/lobby");
         } else {
@@ -53,5 +83,10 @@ router.post("/login", async (request, response) => {
         response.render("login", { title: "Gin Rummy", email, message: "error" });
     }
 });
+
+router.get('/logout', async (request, response) => {
+    request.session.destroy();
+    response.render('login', {error: ''});
+  });
 
 module.exports = router;
