@@ -1,23 +1,50 @@
 <!DOCTYPE html>
 <html>
-<!--npm install socket.io-client-->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--npm install socket.io-client-->
 
   <head>
     <title><%= title %></title>
     <script type="module" src="/scripts/bundle.js" defer></script>
-  
+    <link rel="stylesheet" type="text/css" href="/home.css" />
   </head>
 
   <body>
+    <!-- Navbar (sit on top) -->
+<div class="nav">
+  <div class="home">
+    <a href="/" class="button">GIN RUMMY</a>
+    <!-- Float links to the right. Hide them on small screens -->
+    <div class="links">
+      <a href="/login" class="button">Login</a>
+      <a href="/register" class="button">Register</a>
+      <a href="#" class="button">Rules</a>
+    </div>
+  </div>
+</div>
+
+<div class="gameblock">
+  <div class="newgame">
+    <a href="/lobby" class="button">NEW GAME</a>
     <div id="chat-container">
       <div id="messages"></div>
-    
+
       <label>
-        <input id="chat__message" name="chat-message" placeholder="Type a message..."/>
-    
+        <input
+          id="chat__message"
+          name="chat-message"
+          placeholder="Type a message..."
+        />
       </label>
-    
     </div>
-    
+  </div>
+<div class="bigRectangle">
+  <div class="innerRectangle">
+    <h1>Sign in to play!</h1>
+    <a href="/login" class="button">Login</a>
+  </div>
+</div>
+</div>
   </body>
 </html>
