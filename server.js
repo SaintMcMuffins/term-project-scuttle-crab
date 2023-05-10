@@ -41,6 +41,8 @@ app.use(cookieParser());
 app.set("views", path.join(__dirname, "backend", "views"));
 app.set("view engine", "pug");
 app.use(express.static(path.join(__dirname, "backend", "static")));
+app.use(express.static(__dirname + "/backend/views"));
+app.use(express.static(__dirname + "/backend/assets"));
 app.use(requestTime);
 
 const PORT = process.env.PORT || 3000;
