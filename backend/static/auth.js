@@ -4,28 +4,9 @@ const Users = require("../db/users");
 const router = express.Router();
 const cookieParser = require("cookie-parser");
 const sessions = require('express-session');
-
+const { sessionMiddleware, cookieMiddleware } = require('../middleware/sessionMiddleWare');
 router.use(cookieParser());
-
-const oneDay = 1000 * 60 * 60 * 24;
-router.use(sessions({
-    secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
-    saveUninitialized:true,
-    cookie: { maxAge: oneDay },
-    resave: false 
-}));
-
-const auth = function(request, response, next) {
-  
-    if (request.session && (request.session.user === username) && request.session.admin)
-    {
-      return next();
-    }
-    else
-    {
-      return response.render('login.ejs', {error: ''});
-    }
-  };
+router.use(sessionMiddleware)
 
   
 var session;
@@ -70,7 +51,7 @@ router.post("/login", async (request, response) => {
         const isValidUser = await bcrypt.compare(password, hash);
         if(isValidUser) {
             session=request.session;
-            session.userid=request.body.email;
+            session.userid=request.body.user;
             console.log(request.session)
             console.log("\n\nValid\n\n")
             response.redirect("/lobby");
