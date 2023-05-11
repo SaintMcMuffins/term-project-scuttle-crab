@@ -3,10 +3,9 @@ const bcrypt = require("bcrypt");
 const Users = require("../db/users");
 const router = express.Router();
 const cookieParser = require("cookie-parser");
-const sessions = require('express-session');
-const { sessionMiddleware, cookieMiddleware } = require('../middleware/sessionMiddleWare');
+const sessionMiddleware = require('../middleware/sessionMiddleWare');
 router.use(cookieParser());
-router.use(sessionMiddleware)
+router.use(sessionMiddleware);
 
   
 var session;
