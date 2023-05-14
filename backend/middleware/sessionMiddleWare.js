@@ -1,6 +1,7 @@
 const session = require('express-session');
 const pgSession = require("connect-pg-simple")(session);
 const ONE_HOUR = 1000 * 60 * 60;
+var db;
 
 const addSessionLocals = (request, _response, next) => {
     if (request.session.user !== undefined) {
@@ -13,6 +14,10 @@ const addSessionLocals = (request, _response, next) => {
   };
   
 
+const sessionDB = (db) =>{
+    db = db
+};
+
 const sessionMiddleware = session({
   store: new pgSession({ pgPromise: db }),
   secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
@@ -23,4 +28,4 @@ const sessionMiddleware = session({
   },
 });
 
-module.exports = sessionMiddleware;
+module.exports = {sessionDB, sessionMiddleware};

@@ -23,12 +23,13 @@ document.querySelector("input#chat__message").addEventListener("keydown", (event
     return
   }
 
-  console.log("Sending", event.target.value);
-
+  const message = event.target.value;
+  event.target.value = "";
+  
   fetch("/chat/0", {
     method: "post", 
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({message: event.target.value }),
+    body: JSON.stringify({message }),
   
   })
 })

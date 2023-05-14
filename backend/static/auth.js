@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const Users = require("../db/users");
 const router = express.Router();
 const cookieParser = require("cookie-parser");
-const sessionMiddleware = require('../middleware/sessionMiddleWare');
+const sessionMiddleware = require('../middleware/sessionMiddleWare').sessionMiddleware;
 router.use(cookieParser());
 router.use(sessionMiddleware);
 
@@ -45,14 +45,16 @@ router.post("/login", async (request, response) => {
     console.log("In the post request with ", email, password)
 
     try {
-        const {password: hash} = await Users.findByEmail(email);
+        const {user_id, username, password: hash} = await Users.findByEmail(email);
 
         const isValidUser = await bcrypt.compare(password, hash);
         if(isValidUser) {
             session=request.session;
-            session.userid=request.body.user;
+            session.user_id=user_id;
+            session.username = username;
+            session.email = email;
             console.log(request.session)
-            console.log("\n\nValid\n\n")
+            console.log("\n\nValid ", request.session.username, "\n\n")
             response.redirect("/lobby");
         } else {
             console.log("\n\n***Not valid user\n\n")
