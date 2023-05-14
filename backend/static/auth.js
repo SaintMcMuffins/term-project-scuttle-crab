@@ -2,6 +2,13 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const Users = require("../db/users");
 const router = express.Router();
+const cookieParser = require("cookie-parser");
+const sessionMiddleware = require('../middleware/sessionMiddleWare');
+router.use(cookieParser());
+router.use(sessionMiddleware);
+
+  
+var session;
 
 const SALT_ROUNDS = 10;
 
@@ -42,6 +49,9 @@ router.post("/login", async (request, response) => {
 
         const isValidUser = await bcrypt.compare(password, hash);
         if(isValidUser) {
+            session=request.session;
+            session.userid=request.body.user;
+            console.log(request.session)
             console.log("\n\nValid\n\n")
             response.redirect("/lobby");
         } else {
@@ -53,5 +63,10 @@ router.post("/login", async (request, response) => {
         response.render("login", { title: "Gin Rummy", email, message: "error" });
     }
 });
+
+router.get('/logout', async (request, response) => {
+    request.session.destroy();
+    response.render('login', {error: ''});
+  });
 
 module.exports = router;
