@@ -7,6 +7,7 @@ router.get("/", (request, response) => {
     response.render("home.ejs", {
         title: "Home",
         message: "Gin Rummy: Home Page",
+        username: request.session.username,
     });
 });
 
