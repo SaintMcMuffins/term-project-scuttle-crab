@@ -1,0 +1,10 @@
+@for $i from 1 through 52 {
+    $width: ($i - 1) % 13 * 225; // calculate horizontal position
+    $height: floor(($i - 1) / 13) * 315; // calculate vertical position
+    #card#{$i} {
+      background: url("../images/225x315.jpg") -#{$width}px -#{$height}px;
+      display: inline-block;
+      width: 225px;
+      height: 315px;
+    }
+  }

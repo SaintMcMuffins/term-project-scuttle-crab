@@ -39,6 +39,16 @@ router.get("/login", (request, response) => {
       });
   });
 
+  router.get("/cards", (request, response) => {
+    const name = "person";
+  
+    response.render("cardsTest.ejs", {
+        title: "CardsTest",
+        message: "Gin Rummy: Lobby",
+      });
+  });
+
+
 
 
 
