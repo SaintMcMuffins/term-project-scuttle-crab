@@ -49,6 +49,22 @@ exports.up = (pgm) => {
         },
        
     });
+    pgm.createTable("session", {
+      expire: {
+        type: "timestamp",
+        notNull: true,
+      },
+      sid: {
+        type: "varchar",
+        notNull: true,
+        primaryKey: true,
+      },
+      sess: {
+        type: "json",
+        notNull: true,
+      },
+    });
+    pgm.createIndex("session", ["expire"]);
     
   //  pgm.addConstraint("messages", "poster_id", "foreignKey")
     pgm.addConstraint("messages", {
@@ -63,6 +79,7 @@ exports.up = (pgm) => {
     
   };
 
+
   
   /**
    * @param {import("node-pg-migrate/dist/types").MigrationBuilder} pgm
@@ -70,4 +87,5 @@ exports.up = (pgm) => {
   exports.down = (pgm) => {
     pgm.dropTable("messages")
     pgm.dropTable("users")
+    pgm.dropTable("session");
   };

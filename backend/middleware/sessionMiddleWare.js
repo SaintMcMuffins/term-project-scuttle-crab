@@ -28,4 +28,4 @@ const sessionMiddleware = session({
   },
 });
 
-module.exports = {sessionDB, sessionMiddleware};
+module.exports = {sessionDB, sessionMiddleware, addSessionLocals};
