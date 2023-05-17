@@ -43,26 +43,21 @@
       </label>
   </div>
 <div class="bigRectangle">
-  <div class="lobbyRectangle">
-    <h1>Lobby</h1>
-   <h4>Room: <%= roomname %></h4>
-        <p>Host: <%= host %></p>
-        <div>
-          <div>Players</div>
-          <div id="players">
-            <% players.forEach(function(p) { %>
-            <li><%= p.name %></li>
-            <% }); %>
-          </div>
-        </div>
-        <% if(ishost === true){ %>
-        <div>
-          <a id="startgame" href="\startgame?room=<%= roomname %>">
-            Start Game</a
-          >
-        </div>
+  <div class="innerRectangle">
+    <h1>Create Game</h1>
+    <form id="create-game" action="newgame" method="post" class="signup-form" onsubmit="startNewGame(event)">
+      <label for="roomname"> 
+        Room Name:
+        <input class="input-field" id="roomname" type="text" name="roomname" />
+      </label> 
+     <br> <label for="password"> 
+        Password:
+        <input class="input-field" pass="gamePass" type="password" id="password" name="password" /> 
+      </label>         
 
-        <% } else{ %> Waiting for host to start the game <% } %>
+      </label> 
+      <br><input class="submit-btn" type="submit" />
+    </form>
 </div>
 </div>
 

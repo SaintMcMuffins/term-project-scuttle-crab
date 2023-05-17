@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--npm install socket.io-client-->
+
+  <head>
+    <title><%= title %></title>
+    <script type="module" src="/scripts/bundle.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="/home.css" />
+  </head>
+
+  <body>
+    <!-- Navbar (sit on top) -->
+<div class="nav">
+  <div class="home">
+    <p><b>Welcome, <%= username %>, to Gin Rummy!</b></p>
+    <div class="links">
+      <a href="/login" class="button">Login</a>
+      <a href="/register" class="button">Register</a>
+      <a href="/rules" class="button">Rules</a>
+    </div>
+  </div>
+</div>
+
+<div class="gameblock">
+  <div class="gamebuttons">
+    <a href="/creategame" class="button">NEW GAME</a>
+    <a href="/findgame" class="button">JOIN GAME</a>
+    </div>
+  </div>
+
+<div class="rulesRectangle">
+  <h2>How to Play</h2> 
+<p>Gin Rummy or Gin is a traditional card matching game that requires 2 players and a standard 52 playing card deck with Kings high and Aces low. In Gin Rummy, cards are worth their numerical value with Aces worth 1 and face cards worth 10. The objective of Gin Rummy is to be the first to reach 100 points.</p>
+
+
+ <h4>Set Up</h4>
+<p>Before game play can begin, a dealer must be selected. Each player draws one card from a shuffled deck. The player with the lowest card becomes the dealer
+
+The dealer shuffles the deck and passes out 10 cards alternately to each player. The remaining cards are placed faced down in the center of the group to form the stock. The top card of the stock is flipped face up and placed next to the stock to form the discard pile.</p>
+
+ 
+
+  <h4>How to Play</h4>
+<p>The player opposite of the dealer has the option to play first by taking the top card of the discard pile. If they choose to pass, the dealer has the choice to take the top card of the discard pile. If they also choose to pass, the other player begins the game by taking the top card from the stock pile. From the first draw onward, a player must pick up a card from either the stock or the discard pile at the beginning of their turn and remove one card from their hand to the discard pile at the end of their turn.</p>
+
+ 
+
+<p>The general goal is to get rid of “deadwood” by melding as many cards as you can in order to go Knock or go Gin. Deadwood are cards not in a meld. If no player can reach Knock or Gin by the time the stock pile has two cards left, no points are awarded.</p>
+
+ 
+
+  <h4>Melding</h4>
+<p>A player makes a meld by either having three or more of a kind or by having three or more of a run. A run is made of three or more cards of the same suit in increasing or decreasing order. Unlike Basic Rummy, players do not lay down their melds in Gin Rummy until someone goes Knock.</p>
+
+ 
+
+  <h4>Knocking</h4>
+<p>A player can go Knock when the card value of their deadwood is 10 or less. To go Knock, the player places the card they will discard face down on the discard pile. After a player goes Knock, all cards are faced up and the non-knocking player has the opportunity to lay off their deadwood cards onto the knocking players’ melds. For instance, if a player has made a meld of 3 Kings and the player in play has the fourth King, they may place it on the 3 King meld to complete the set. Likewise, if a meld is made of the 2, 3, and 4 of clubs and the player in play has the Ace of clubs, they may place it before the 2 to build upon the run.
+
+After the non-knocking player makes the most lay offs they can, points are given to the knocking player based on the difference between the card values of the remaining deadwood in the game. If the non-Knocking player has less deadwood than the knocking player, it is known as an undercut and the non-knocking player receives the points along with a 10 point bonus.</p<
+
+ 
+
+  <h4>Going Gin</h4>
+<p>A player goes Gin if they get rid of all of their deadwood through melds. Going Gin results in a 25 point bonus along with the deadwood value of the other player.</p>
+</div>
+
+
+  </body>
+</html>

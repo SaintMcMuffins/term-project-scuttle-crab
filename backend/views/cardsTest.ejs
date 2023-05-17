@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%= title %></title>
+        <script type="module" src="/scripts/bundle.js" defer></script>
+        <link rel="stylesheet" type="text/css" href="/cardsTest.css" />
+    </head>
+    <div id="container"></div>
+    <script>
+        const container = document.getElementById('container');
+        for (let i = 1; i <= 52; i++) {
+          const card = document.createElement('div');
+          card.setAttribute('id', `card${i}`);
+          container.appendChild(card);
+        }
+      </script>
+
+
+</html>
