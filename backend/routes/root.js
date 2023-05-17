@@ -39,6 +39,33 @@ router.get("/login", (request, response) => {
       });
   });
 
+  router.get("/joinGame", (request, response) => {
+    const name = "person";
+  
+    response.render("joinGame.ejs", {
+        title: "Join Game",
+        message: "Gin Rummy: Join Game",
+      });
+  });
+
+  router.get("/createGame", (request, response) => {
+    const name = "person";
+  
+    response.render("createGame.ejs", {
+        title: "Create Game",
+        message: "Gin Rummy: Create Game",
+      });
+  });
+
+  router.get("/rules", (request, response) => {
+    const name = "person";
+  
+    response.render("rules.ejs", {
+        title: "Rules",
+        message: "Gin Rummy: Rules",
+      });
+  });
+
   router.get("/cards", (request, response) => {
     const name = "person";
   
