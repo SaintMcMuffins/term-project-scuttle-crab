@@ -33,14 +33,14 @@ exports.up = (pgm) => {
         default: null
       },
       hand1: {
-        type: "integer[7]",
+        type: "integer[10]",
         notNull: true,
-        default: '{0, 0, 0, 0, 0, 0, 0}'
+        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
       },
       hand2: {
-        type: "integer[7]",
+        type: "integer[10]",
         notNull: true,
-        default: '{0, 0, 0, 0, 0, 0, 0}'
+        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
       },
       deck: {
         type: "integer[52]",
