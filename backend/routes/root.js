@@ -3,11 +3,13 @@ const router = express.Router();
 
 router.get("/", (request, response) => {
     const name = "person";
+    const loggedIn = request.session.username ? true : false;
 
     response.render("home.ejs", {
         title: "Home",
         message: "Gin Rummy: Home Page",
         username: request.session.username,
+        loggedIn: loggedIn,
     });
 });
 
@@ -36,6 +38,7 @@ router.get("/login", (request, response) => {
     response.render("lobby.ejs", {
         title: "Lobby",
         message: "Gin Rummy: Lobby",
+        username: request.session.username,
       });
   });
 
@@ -45,6 +48,7 @@ router.get("/login", (request, response) => {
     response.render("joinGame.ejs", {
         title: "Join Game",
         message: "Gin Rummy: Join Game",
+        username: request.session.username,
       });
   });
 
@@ -54,6 +58,7 @@ router.get("/login", (request, response) => {
     response.render("createGame.ejs", {
         title: "Create Game",
         message: "Gin Rummy: Create Game",
+        username: request.session.username,
       });
   });
 
