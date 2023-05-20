@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const Games = require("../db/games.js")
 
 router.get("/", (request, response) => {
     const name = "person";
@@ -32,14 +33,34 @@ router.get("/login", (request, response) => {
       });
   });
 
-  router.get("/lobby", (request, response) => {
-    const name = "person";
-  
-    response.render("lobby.ejs", {
-        title: "Lobby",
-        message: "Gin Rummy: Lobby",
-        username: request.session.username,
-      });
+  router.get("/lobby/:id", async (request, response) => {
+    var player1_name, player2_name
+    try{
+        player1_name = await Games.player1_of_game_id(request.params.id)
+        host = await Games.host_of_game_id(request.params.id)
+        try{
+            player2_name = await Games.player2_of_game_id(request.params.id)
+
+        }catch {// Player2 not in game yet, returned nothing on query
+            player2_name = {username: ""}
+        }
+
+        console.log(player1_name.username, player2_name.username)
+        response.render("lobby.ejs", {
+            title: "Lobby",
+            roomname: request.params.id,
+            host: player1_name.username,
+            players: [player1_name.username, player2_name.username],
+            ishost: (request.session.user_id == host.user_id),
+            message: "Gin Rummy: Lobby",
+            username: request.session.username,
+          });
+    } catch(error) {
+        console.log({ error })
+        response.redirect("/")
+    }
+
+    
   });
 
   router.get("/joinGame", (request, response) => {
@@ -52,14 +73,21 @@ router.get("/login", (request, response) => {
       });
   });
 
-  router.get("/createGame", (request, response) => {
-    const name = "person";
+
+
+  router.get("/creategame", async (request, response) => {
+    const io = request.app.get("io");
   
-    response.render("createGame.ejs", {
-        title: "Create Game",
-        message: "Gin Rummy: Create Game",
-        username: request.session.username,
-      });
+    try {
+      const {game_id} = await Games.create(request.session.user_id);
+        console.log(game_id)
+     // io.emit(GAME_CREATED, { game_id, created_at });
+      response.redirect(`/lobby/${game_id}`);
+    } catch (error) {
+      console.log({ error });
+  
+      response.redirect("/");
+    }
   });
 
   router.get("/rules", (request, response) => {

@@ -40,11 +40,53 @@ const state = async (game_id, user_id) => {
   }
 };
 
+const create = async (user_id) =>{
+    const new_game = await db.one(
+        `INSERT into games (player1_id) VALUES ($1) RETURNING game_id`,
+        [user_id]
+    );
+    return new_game
+}
+
+const player1_of_game_id = async (game_id) =>{
+    const name = await db.one(
+        `SELECT username FROM users WHERE user_id in (select player1_id from games WHERE game_id=$1)`,
+        [game_id]
+
+    )
+
+    return name
+}
+
+const player2_of_game_id = async (game_id) =>{
+    const name = await db.one(
+        `SELECT username FROM users WHERE user_id in (select player2_id from games WHERE game_id=$1)`,
+        [game_id]
+
+    )
+
+    return name
+}
+
+const host_of_game_id = async (game_id) =>{
+    const name = await db.one(
+        `SELECT player1_id FROM games WHERE game_id=$1`,
+        [game_id]
+
+    )
+
+    return name
+}
+
 module.exports = {
   createGameSQL,
   insertFirstUserSQL,
   gamesListSQL,
   joinGameSQL,
   join,
-  state
+  state,
+  create,
+  player1_of_game_id,
+  player2_of_game_id,
+  host_of_game_id
 };
