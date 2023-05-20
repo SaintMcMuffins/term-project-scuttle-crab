@@ -47,6 +47,7 @@ router.get("/login", (request, response) => {
 
   router.get("/lobby/:id", async (request, response) => {
     var player1_name, player2_name
+    const loggedIn = request.session.username ? true : false;
     try{
         player1_name = await Games.player1_of_game_id(request.params.id)
         host = await Games.host_of_game_id(request.params.id)
@@ -66,6 +67,7 @@ router.get("/login", (request, response) => {
             ishost: (request.session.user_id == host.player1_id),
             message: "Gin Rummy: Lobby",
             username: request.session.username,
+            loggedIn: loggedIn,
           });
     } catch(error) {
         console.log({ error })
