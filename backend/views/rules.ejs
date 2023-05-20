@@ -16,7 +16,7 @@
     <div class="header-bar">
       <h2><a class="logo" href="/"><b>GIN RUMMY</b></a></h2>
       <% if (loggedIn) { %>
-          <div class="header-items"><a href="/" class="button">Logout</a></div>
+          <div class="header-items"><a href="/logout" class="button">Logout</a></div>
           <div class="header-items"><a href="/rules" class="button">Rules</a></div>
           
         <%} else {%>
@@ -24,14 +24,6 @@
           <div class="header-items"><a href="/login" class="button">Login</a></div>
           <div class="header-items"><a href="/rules" class="button">Rules</a></div>
           <% } %>   
-      <!-- <div class="home">
-        <p><b>Welcome, <%= username %>, to Gin Rummy!</b></p>
-        <div class="links">
-          <a href="/login" class="button">Login</a>
-          <a href="/register" class="button">Register</a>
-          <a href="/rules" class="button">Rules</a>
-        </div>
-      </div> -->
     </div>
   </header>
   <body>
@@ -39,7 +31,7 @@
 <div class="gameblock">
   <div class="gamebuttons">
     <a href="/creategame" class="button">NEW GAME</a>
-    <a href="/findgame" class="button">JOIN GAME</a>
+    <a href="/joingame" class="button">JOIN GAME</a>
     </div>
   </div>
 
