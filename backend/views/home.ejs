@@ -12,10 +12,12 @@
       <h2><a class="logo" href="/"><b>GIN RUMMY</b></a></h2>
       <% if (loggedIn) { %>
           <div class="header-items"><a href="/" class="button">Logout</a></div>
+          <div class="header-items"><a href="/rules" class="button">Rules</a></div>
           
         <%} else {%>
           <div class="header-items"><a href="/register" class="button">Register</a></div>
           <div class="header-items"><a href="/login" class="button">Login</a></div>
+          <div class="header-items"><a href="/rules" class="button">Rules</a></div>
           <% } %>   
       <!-- <div class="home">
         <p><b>Welcome, <%= username %>, to Gin Rummy!</b></p>
@@ -30,6 +32,7 @@
 
   <body>
     <!-- Navbar (sit on top) -->
+    <% if (loggedIn) { %>
   <div id="chat-container">
       <p id="chat">Chat</p>
       <div id="messages">
@@ -43,6 +46,16 @@
         />
       </label>
   </div>
+  <%} else {%>
+      <p id="chat">Chat</p>
+      <div id="messages">
+      </div>
+    <input
+    id="chat__message"
+    name="chat-message"
+    placeholder="Sign in to chat!"
+  />
+    <% } %>   
 <div class="bigRectangle">
   <div class="innerRectangle">
     <% if (loggedIn) { %>

@@ -33,6 +33,18 @@ router.get("/login", (request, response) => {
       });
   });
 
+  router.get("/game", (request, response) => {
+    const name = "person";
+    const loggedIn = request.session.username ? true : false;
+  
+    response.render("game.ejs", {
+        title: "Game",
+        message: "Gin Rummy: Game",
+        username: request.session.username,
+        loggedIn: loggedIn,
+      });
+  });
+
   router.get("/lobby/:id", async (request, response) => {
     var player1_name, player2_name
     try{
@@ -92,10 +104,13 @@ router.get("/login", (request, response) => {
 
   router.get("/rules", (request, response) => {
     const name = "person";
+    const loggedIn = request.session.username ? true : false;
   
     response.render("rules.ejs", {
         title: "Rules",
         message: "Gin Rummy: Rules",
+        username: request.session.username,
+        loggedIn: loggedIn,
       });
   });
 

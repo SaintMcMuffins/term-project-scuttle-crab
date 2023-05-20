@@ -1,0 +1,29 @@
+.card-area {
+    background-color: #d9d9d9;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-auto-flow: column;
+  }
+  
+  /* .deck {
+    grid-column: 4 / 10; /* Deck spans the first column 
+    grid-row: 3 / 5; /* Deck occupies the first row 
+    /* Additional styles for deck 
+  } */
+  
+  .p1-item {
+    border: 1px;
+    padding: 10px;
+  }
+  
+  .p2-item {
+    border: 1px;
+    padding: 10px;
+  }
+  
+  #card53 {
+    background: url("../images/card_back_113x158.jpg") 0 0;
+    display: inline-block;
+    width: 113px;
+    height: 158px;
+  }/*# sourceMappingURL=cardsTest.css.map */
