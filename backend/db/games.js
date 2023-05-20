@@ -94,6 +94,50 @@ const start_game = async (game_id) =>{
     }
 }
 
+const join_game = async (game_id, user_id) =>{
+    const player2 = await db.one(
+        `SELECT player2_id FROM games WHERE game_id=$1`,
+        [game_id]
+    )
+
+    // Check if game has empty slot
+    if(player2.player2_id == null){
+        await db.none(
+            `UPDATE games SET player2_id=$1 WHERE game_id=$2`,
+            [user_id, game_id]
+        )
+    }
+}
+
+const get_game_by_id = async (game_id) =>{
+    try{
+        const game = await db.one(
+            `SELECT * FROM games WHERE game_id=$1`,
+            [game_id]
+        )
+        return game
+
+    }catch{
+        console.log("Game does not exist")
+        return null
+    }
+
+}
+
+const find_open_game = async () =>{
+    try{
+        const game = await db.one(
+            `SELECT * FROM games WHERE player2_id IS NULL LIMIT 1`
+        )
+
+        return game
+    }catch{
+        console.log("No open games")
+        return null
+    }
+}
+
+
 module.exports = {
   createGameSQL,
   insertFirstUserSQL,
@@ -105,5 +149,8 @@ module.exports = {
   player1_of_game_id,
   player2_of_game_id,
   host_of_game_id,
-  start_game
+  start_game,
+  join_game,
+  get_game_by_id,
+  find_open_game
 };

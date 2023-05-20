@@ -4,6 +4,8 @@ const messageContainer = document.querySelector("#messages");
 
 // From 4/17 section 1
 socket.on("chat-message-received", ({username, message, timestamp}) => {
+    console.log(socket.handshake)
+
   const entry = document.createElement("div");
 
   const displayName = document.createElement("span");
@@ -18,33 +20,39 @@ socket.on("chat-message-received", ({username, message, timestamp}) => {
   messageContainer.appendChild(entry)
 })
 
-socket.on("redirect-to-game", ({game_id}) =>{
+socket.on("redirect-to-game", ({game_id, user_id}) =>{
     console.log("Socket caught it")
     window.location.href = `/game/${game_id}`
 })
 
-document.getElementById("start-game-button").addEventListener("click", () => {
-    console.log("Click")
-    fetch("/games/15/start", {
-        method: "post", 
-        headers: {"Content-Type": "application/json"},
+const start_button = document.getElementById("start-game-button")
+if (start_button != null){
+    start_button.addEventListener("click", () => {
+        console.log("Click")
+        fetch("/games/15/start", {
+            method: "post", 
+            headers: {"Content-Type": "application/json"},
+          
+        })
+    })
+    
+}
+
+const chat_box = document.querySelector("input#chat__message")
+if (chat_box != null){
+    chat_box.addEventListener("keydown", (event) => {
+        if(event.keyCode !== 13){ // Return is 13
+          return
+        }
       
-      })
-})
-
-
-document.querySelector("input#chat__message").addEventListener("keydown", (event) => {
-  if(event.keyCode !== 13){ // Return is 13
-    return
-  }
-
-  const message = event.target.value;
-  event.target.value = "";
-  
-  fetch("/chat/0", {
-    method: "post", 
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({message }),
-  
-  })
-})
+        const message = event.target.value;
+        event.target.value = "";
+        
+        fetch("/chat/0", {
+          method: "post", 
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({message }),
+        
+        })
+    })
+}
