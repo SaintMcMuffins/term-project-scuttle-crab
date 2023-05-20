@@ -74,105 +74,75 @@ body {
 
 }
 
-.home {
-  text-align: center;
-}
-
-.links {
-  padding-top: 10px;
-}
-
-.gamebuttons {
-  padding-top: 40px;
-  text-align: center;
-}
-
-.chat-container {
-  width: 300px;
-  height: 500px;
-  background-color: #000000;
-  justify-content: right;
-  align-items: right;
-  border-radius: 10px;
-}
-
-.chat {
+.card-area {
+    display: grid;
+    grid-template-columns: repeat(10, 113px);
+    grid-template-rows: repeat(5, 158px);
+    grid-auto-flow: column;
+    grid-auto-flow: row;
+    gap: 5px
+  }
+  .game-container {
+    position: relative;
+    width: fit-content; /* Adjust the width as needed */
+    height: fit-content; /* Adjust the height as needed */
+    padding: 40px;
+    background-color: #d9d9d9;
+    border-radius: 20px;
+  }
   
-}
+  .parent-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Adjust the height as needed */
+  }
+  .p2-item {
+    grid-row: 1 / 3;
+  }
 
-.messages {
-  background-color: #666666;
-  color: #FFFFFF;
-}
+  
+  .deck {
+    grid-column: 4 / 10;
+    grid-row: 3 / 5; 
+   
+  } 
+  .pile {
+    grid-column: 7 / 10;
+    grid-row: 3 / 5; 
+  } 
+  
+  .p1-item {
+    grid-row: 5 / 5;
 
-.chat__message {
-  background-color: #666666;
-  color: #FFFFFF;
-}
+  }
+  
+  #card53 {
+    background: url("../images/card_back_113x158.jpg");
+    display: inline-block;
+    width: 113px;
+    height: 158px;
+  }/*# sourceMappingURL=cardsTest.css.map */
 
-
-.bigRectangle {
-  top: 50%;
-  width: 1424px;
-  height: 700px;
-  margin-right: auto;
-  margin-left: auto;
-  margin-top: 400px;
-  transform: translateY(-50%);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #d9d9d9;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 20px;
-}
-
-.innerRectangle {
-  width: 60%;
-  height: 349px;
-  background: #d9d9d9;
-}
-
-h1 {
-  	padding-top: 80px;
-    text-align: center;
-    width: 50%;
-    margin: auto;
-  	font-style: normal;
-    font-weight: 600;
-  	font-size: 50px;
- 	line-height: 53px;
-  	color: #272626;
-}
-
-.loginButton {
-  padding-left: 30%;
-  padding-top: 50px;
-  margin-left: 60px;
-}
-
-form {
-  text-align: center;
-  margin-top: 30px;
-}
-
-.rulesRectangle {
-  top: 50%;
-width: 1024px;
-margin-right: auto;
-margin-left: auto;
-margin-top: 400px;
-transform: translateY(-50%);
-background-color: #D3D3D3;
-}
-
-.lobbyRectangle {
-  width: 60%;
-  height: 349px;
-  background: #f7f7f7;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 10px;
-  text-align: center;
-}
-
+  .chat-area{
+    flex: 1;
+    display: flex;
+  }
+  
+  .chat-box {
+    border: 1px solid #000;
+    flex: 1;
+  }
+  .chat {
+    
+  }
+  
+  .messages {
+    background-color: #666666;
+    color: #FFFFFF;
+  }
+  
+  .chat__message {
+    background-color: #666666;
+    color: #FFFFFF;
+  }

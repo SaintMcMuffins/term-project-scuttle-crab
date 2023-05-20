@@ -55,7 +55,7 @@ router.post("/login", async (request, response) => {
             session.email = email;
             console.log(request.session)
             console.log("\n\nValid ", request.session.username, "\n\n")
-            response.redirect("/lobby");
+            response.redirect("/");
         } else {
             console.log("\n\n***Not valid user\n\n")
             throw "User did not provide valid credentials";

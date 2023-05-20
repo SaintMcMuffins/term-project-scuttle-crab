@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--npm install socket.io-client-->
+
+  <header>
+    <title><%= title %></title>
+    <script type="module" src="/scripts/bundle.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="/game.css" />
+    <div class="header-bar">
+      <h2>
+        <a class="logo" href="/"><b>GIN RUMMY</b></a>
+      </h2>
+      <% if (loggedIn) { %>
+      <div class="header-items"><a href="/logout" class="button">Logout</a></div>
+
+      <%} else {%>
+      <div class="header-items">
+        <a href="/register" class="button">Register</a>
+      </div>
+      <div class="header-items"><a href="/login" class="button">Login</a></div>
+      <% } %>
+    </div>
+  </header>
+
+  <body>
+    <!-- Navbar (sit on top) -->
+
+    <div class="parent-container">
+      <!-- ----------------------------chat---------------------- -->
+      <div class="chat-area">
+        <div class="chat-box">
+          <div id="chat-container">
+            <p id="chat">Chat</p>
+            <div id="messages"></div>
+            <label>
+              <input
+                id="chat__message"
+                name="chat-message"
+                placeholder="Type a message..."
+              />
+            </label>
+        </div>
+      </div>
+    </div>
+<!-- ----------------------------ui---------------------- -->
+      <div class="ui-area">
+
+      </div>
+<!-- ----------------------------game---------------------- -->
+      <div class="game-container">
+        
+        
+        <div class="card-area">
+          <!-- Card area content goes here -->
+          <div class="deck"><button id="card53"></button></div>
+          <div class="pile" id="card53"></div>
+            <!-- First player's card hand content goes here -->
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+            <div class="p1-item" id="card53"></div>
+
+            <!-- Second player's card hand content goes here -->
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+            <div class="p2-item" id="card53"></div>
+        </div>
+      </div>
+  </div>
+  </body>
+</html>

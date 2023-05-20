@@ -18,6 +18,21 @@ socket.on("chat-message-received", ({username, message, timestamp}) => {
   messageContainer.appendChild(entry)
 })
 
+socket.on("redirect-to-game", ({game_id}) =>{
+    console.log("Socket caught it")
+    window.location.href = `/game/${game_id}`
+})
+
+document.getElementById("start-game-button").addEventListener("click", () => {
+    console.log("Click")
+    fetch("/games/15/start", {
+        method: "post", 
+        headers: {"Content-Type": "application/json"},
+      
+      })
+})
+
+
 document.querySelector("input#chat__message").addEventListener("keydown", (event) => {
   if(event.keyCode !== 13){ // Return is 13
     return
