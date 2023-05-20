@@ -124,15 +124,15 @@ body {
     height: 158px;
   }/*# sourceMappingURL=cardsTest.css.map */
 
-  .chat-container {
-    width: 300px;
-    height: 500px;
-    background-color: #000000;
-    justify-content: right;
-    align-items: right;
-    border-radius: 10px;
+  .chat-area{
+    flex: 1;
+    display: flex;
   }
   
+  .chat-box {
+    border: 1px solid #000;
+    flex: 1;
+  }
   .chat {
     
   }
