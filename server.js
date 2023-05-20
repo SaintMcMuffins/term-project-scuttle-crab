@@ -53,11 +53,12 @@ const PORT = process.env.PORT || 3000;
 const rootRoutes = require("./backend/routes/root");
 const chatRoutes = require("./backend/static/chat");
 const authRoutes = require("./backend/static/auth");
+const gameRoutes = require("./backend/static/games");
 
 app.use("/", rootRoutes);
 app.use("/chat", chatRoutes);
 app.use("/auth", authRoutes);
-
+app.use("/games", gameRoutes);
 
 
 app.use((request,response,next) => {

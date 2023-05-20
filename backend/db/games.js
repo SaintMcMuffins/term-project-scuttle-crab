@@ -78,6 +78,22 @@ const host_of_game_id = async (game_id) =>{
     return name
 }
 
+const start_game = async (game_id) =>{
+    const status = await db.one(
+        `SELECT turn FROM games WHERE game_id=$1`,
+        [game_id]
+    )
+
+    // Check if game not started
+    console.log("Game status is ", status.turn)
+    if(status.turn != -1){
+        await db.none(
+            `UPDATE games SET turn=1 WHERE game_id=$1`,
+            [game_id]
+        )
+    }
+}
+
 module.exports = {
   createGameSQL,
   insertFirstUserSQL,
@@ -88,5 +104,6 @@ module.exports = {
   create,
   player1_of_game_id,
   player2_of_game_id,
-  host_of_game_id
+  host_of_game_id,
+  start_game
 };

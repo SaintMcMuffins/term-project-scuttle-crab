@@ -51,7 +51,7 @@ router.get("/login", (request, response) => {
             roomname: request.params.id,
             host: player1_name.username,
             players: [player1_name.username, player2_name.username],
-            ishost: (request.session.user_id == host.user_id),
+            ishost: (request.session.user_id == host.player1_id),
             message: "Gin Rummy: Lobby",
             username: request.session.username,
           });
