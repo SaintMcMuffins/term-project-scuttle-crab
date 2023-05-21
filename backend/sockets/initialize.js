@@ -15,10 +15,7 @@ const initSockets = (app, sessionMiddleware) => {
      //   console.log("Connection", socket.handshake);
         const user = socket.handshake.session.user_id        
         // Extra 7 for https://
-        const URL = (socket.handshake.headers.referer).slice((socket.handshake.headers.host).length+7)
-
-        console.log(socket.handshake.headers.host)
-        console.log(socket.handshake.headers.referer)
+        const URL = (socket.handshake.headers.referer).split((socket.handshake.headers.host))[1]
 
         if (user != null){
             console.log("join", URL)

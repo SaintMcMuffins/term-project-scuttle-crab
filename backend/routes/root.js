@@ -78,7 +78,7 @@ router.get("/lobby/:id", async (request, response) => {
   const loggedIn = request.session.username ? true : false;
   if (loggedIn == false){
     response.redirect("/")
-
+    return null
   }else {
     try{
         const game = await Games.get_game_by_id(request.params.id)
