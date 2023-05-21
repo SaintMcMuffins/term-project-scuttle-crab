@@ -94,6 +94,9 @@ const not_host_of_game_id = async (game_id) =>{
     return id
 }
 
+// Checks game is not started
+// Makes random deck, deals 10 cards to both players
+// Sets game turn above -1, to mark started
 const start_game = async (game_id) =>{
     const status = await db.one(
         `SELECT turn FROM games WHERE game_id=$1`,

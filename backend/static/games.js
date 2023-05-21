@@ -49,6 +49,14 @@ router.get("/:id", async (request, response, next) => {
         if(game.player1_id == request.session.user_id || (game.player2_id != null && game.player2_id == request.session.user_id)){
             console.log("Should render")
 
+            // Player only needs to know their own hand
+            // TODO: Check if opposite player has knocked. Will need to show
+            var player_hand = null
+            if (request.session.user_id == game.player1_id){
+                player_hand = game.hand1
+            }else{
+                player_hand = game.hand2
+            }
             response.render("game.ejs", {
                 title: "Game",
                 roomname: game.game_id,
@@ -57,6 +65,7 @@ router.get("/:id", async (request, response, next) => {
                 message: "Gin Rummy: Game",
                 player1: game.player1_id,
                 player2: game.player2_id,
+                hand: player_hand,
                 loggedIn: true
               });
 
