@@ -16,7 +16,11 @@ router.post("/:id/start", async (request, response, next) => {
 
        // response.status(302);
         const io = request.app.get("io")
-        io.to(`/lobby/${request.params.id}/${request.session.user_id}`).emit("redirect-to-game",{
+        io.to(`/lobby/${request.params.id}/${host.player1_id}`).emit("redirect-to-game",{
+            game_id
+        })
+
+        io.to(`/lobby/${request.params.id}/${p2.player2_id}`).emit("redirect-to-game",{
             game_id
         })
         
