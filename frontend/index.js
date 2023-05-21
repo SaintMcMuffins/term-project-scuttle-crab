@@ -2,10 +2,10 @@ const io = require("socket.io-client");
 const socket = io();
 const messageContainer = document.querySelector("#messages");
 
-
 // From 4/17 section 1
 socket.on("chat-message-received", ({username, message, timestamp}) => {
   const entry = document.createElement("div");
+
 
   const displayName = document.createElement("span");
   displayName.innerText = username;
@@ -22,6 +22,14 @@ socket.on("chat-message-received", ({username, message, timestamp}) => {
 socket.on("redirect-to-game", ({game_id}) =>{
     console.log("Socket caught it", game_id)
     window.location.href = `/games/${game_id}`
+})
+
+socket.on("player-joined-lobby", ({p2}) =>{
+    const players_in_lobby = document.getElementsByClassName("player_names")
+    if (players_in_lobby[1] != null){
+        players_in_lobby[1].innerText = p2
+    }
+
 })
 
 const start_button = document.getElementById("start-game-button")

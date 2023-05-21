@@ -42,6 +42,12 @@ router.get("/register", (request, response) => {
     if (game != null){
         try{
             await Games.join_game(game.game_id, request.session.user_id)
+            const io = request.app.get("io")
+            const p2 = (await Games.player2_of_game_id(game.game_id)).username
+            // Let waiting player know someone joined
+            io.to(`/lobby/${game.game_id}/${game.player1_id}`).emit("player-joined-lobby",{
+                p2
+            })
             response.redirect(`/lobby/${game.game_id}`)
 
         }catch{
