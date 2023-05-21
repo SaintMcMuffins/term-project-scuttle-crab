@@ -15,7 +15,7 @@ const initSockets = (app, sessionMiddleware) => {
      //   console.log("Connection", socket.handshake);
         const user = socket.handshake.session.user_id        
         // Extra 7 for https://
-        const URL = (socket.handshake.headers.referer).slice((socket.handshake.headers.host).length+7)
+        const URL = (socket.handshake.headers.referer).split((socket.handshake.headers.host))[1]
 
         console.log(socket.handshake.headers.referer)
         console.log(socket.handshake.headers.host)
