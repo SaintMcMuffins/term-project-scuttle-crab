@@ -2,10 +2,9 @@ const io = require("socket.io-client");
 const socket = io();
 const messageContainer = document.querySelector("#messages");
 
+
 // From 4/17 section 1
 socket.on("chat-message-received", ({username, message, timestamp}) => {
-    console.log(socket.handshake)
-
   const entry = document.createElement("div");
 
   const displayName = document.createElement("span");
