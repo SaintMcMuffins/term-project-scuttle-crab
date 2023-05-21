@@ -40,7 +40,7 @@ router.post("/:id/start", async (request, response, next) => {
 router.get("/:id", async (request, response, next) => {
     const game_id = request.params.id
     console.log("In get for game id", game_id)
-
+    await Games.shuffle_deck(1)
     const game = await Games.get_game_by_id(game_id)
     
     const player1_name = await Games.player1_of_game_id(request.params.id);

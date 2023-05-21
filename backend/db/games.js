@@ -150,6 +150,40 @@ const find_open_game = async () =>{
     }
 }
 
+const shuffle_deck = async(game_id) =>{
+    try{
+        var cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+            21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+            41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+            51, 52]
+
+        var deck = []
+            
+        var card = 0
+        var draw = 0
+        var first_card = 0
+        for (i=0; i < 52; i++){
+            draw = Math.floor(Math.random() * (52-i))
+            // Swap position so we can pop and shift
+            card = cards[draw]
+            first_card = cards[0]
+            cards[0] = card
+            cards[draw] = first_card
+
+            deck.push(cards.shift())
+        }
+
+        await db.none(
+            `UPDATE games SET deck=$1 WHERE game_id=$2`,
+            [deck, game_id]
+        )
+    }catch{
+
+    }
+}
+
 
 module.exports = {
   createGameSQL,
@@ -166,5 +200,7 @@ module.exports = {
   start_game,
   join_game,
   get_game_by_id,
-  find_open_game
+  find_open_game,
+
+  shuffle_deck
 };
