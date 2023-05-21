@@ -57,16 +57,9 @@
           <div class="deck"><button id="card53"></button></div>
           <div class="pile" id="card53"></div>
             <!-- First player's card hand content goes here -->
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
+            <% hand.forEach(function(c) { %>
+                <div class="p1-item" id="card<%= c %>"></div>
+            <% }); %>
 
             <!-- Second player's card hand content goes here -->
             <div class="p2-item" id="card53"></div>
