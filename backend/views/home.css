@@ -134,10 +134,11 @@ text-align: center;
 }
 
 .bigRectangle {
+  float: left;
   width: 1000px;
   height: 400px;
   margin-right: auto;
-  margin-left: auto;
+  margin-left: 200px;
   margin-top: 300px;
   transform: translateY(-50%);
   overflow: hidden;
