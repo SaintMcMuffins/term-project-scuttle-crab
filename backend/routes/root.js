@@ -25,11 +25,33 @@ router.get("/login", (request, response) => {
 
 router.get("/register", (request, response) => {
   const name = "person";
-
-  response.render("register.ejs", {
+    response.render("register.ejs", {
     title: "Register",
     message: "Gin Rummy: Register",
   });
+
+
+
+  router.get("/findgame", async (request, response, next) => {
+    console.log("Looking for games...")
+  
+    const game = await Games.find_open_game()
+    console.log("Found game ", game.game_id)
+
+    // Redirect back home if join fails or game isn't found
+    if (game != null){
+        try{
+            await Games.join_game(game.game_id, request.session.user_id)
+            response.redirect(`/lobby/${game.game_id}`)
+
+        }catch{
+            response.redirect("/")
+
+        }
+    } else{
+        response.redirect("/")
+
+    }
 });
 
 router.get("/game", (request, response) => {
