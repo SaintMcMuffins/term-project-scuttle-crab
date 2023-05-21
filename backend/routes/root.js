@@ -36,7 +36,6 @@ router.get("/register", (request, response) => {
     console.log("Looking for games...")
   
     const game = await Games.find_open_game()
-    console.log("Found game ", game.game_id)
 
     // Redirect back home if join fails or game isn't found
     if (game != null){
