@@ -29,7 +29,7 @@ router.get("/register", (request, response) => {
     title: "Register",
     message: "Gin Rummy: Register",
   });
-
+});
 
 
   router.get("/findgame", async (request, response, next) => {
