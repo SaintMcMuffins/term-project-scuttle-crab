@@ -59,11 +59,16 @@ const player1_of_game_id = async (game_id) =>{
 }
 
 const player2_of_game_id = async (game_id) =>{
-    const name = await db.one(
-        `SELECT username FROM users WHERE user_id in (select player2_id from games WHERE game_id=$1)`,
-        [game_id]
-
-    )
+    try{
+        const name = await db.one(
+            `SELECT username FROM users WHERE user_id in (select player2_id from games WHERE game_id=$1)`,
+            [game_id]
+    
+        )
+    }catch{
+        return null
+    }
+    
 
     return name
 }
