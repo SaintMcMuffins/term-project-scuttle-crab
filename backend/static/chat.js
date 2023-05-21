@@ -5,11 +5,12 @@ router.post("/:id", (request, response, next) => {
     const io = request.app.get("io");
     const {message} = request.body;
     const username =  request.session.username;
+    const timestamp = new Date().toISOString();
 
     io.emit("chat-message-received", {
         message,
         username,
-        timestamp: Date.now(),
+        timestamp,
     });
 
     response.send()

@@ -42,14 +42,13 @@ body {
   padding-top: 5px;
   padding-bottom: 70px;
   margin: 0;
-  
 }
 
 .header-items {
   display: inline-block;
   float: right; /* Optional: To align elements to the center horizontally */
   padding-top: 15px;
-  padding-right:10px;
+  padding-right: 10px;
 }
 .logo {
   color: #333;
@@ -59,7 +58,6 @@ body {
   font-size: 40px;
   float: left;
 }
-
 
 .button {
   text-decoration: none;
@@ -71,7 +69,7 @@ body {
   background: #666666;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   border-radius: 10px;
-
+  font-family: Inter-Regular;
 }
 
 .home {
@@ -87,37 +85,61 @@ body {
   text-align: center;
 }
 
-.chat-container {
-  width: 300px;
-  height: 500px;
-  background-color: #000000;
-  justify-content: right;
-  align-items: right;
-  border-radius: 10px;
+.chat-area {
+  flex: 1;
+  display: flex;
+  float: right;
+  padding-right: 40px;
+  padding-top: 10px;
 }
 
-.chat {
-  
+.chat-box {
+  border: 1px solid #000;
+  flex: 1;
+  background-color: #d9d9d9;
 }
 
-.messages {
-  background-color: #666666;
-  color: #FFFFFF;
+.not-logged-chat-area {
+  flex: 1;
+  display: flex;
+  float: right;
+  padding-right: 40px;
+  padding-top: 10px;
 }
 
-.chat__message {
-  background-color: #666666;
-  color: #FFFFFF;
+.not-logged-chat-box {
+  border: 1px solid #000;
+  flex: 1;
+  background-color: #d9d9d9;
 }
 
+#chat {
+  color: #333;
+text-align: center;
+  text-decoration: none;
+  font-family: Inter-ExtraBold;
+  font-size: 20px;
+}
+
+#messages {
+  color: black;
+  padding-left: 25px;
+  font-family: Inter-Regular;
+}
+
+#chat__message {
+  color: black;
+  font-family: Inter-Regular;
+  margin-left: 20px;
+}
 
 .bigRectangle {
-  top: 50%;
-  width: 1424px;
-  height: 700px;
+  float: left;
+  width: 1000px;
+  height: 400px;
   margin-right: auto;
-  margin-left: auto;
-  margin-top: 400px;
+  margin-left: 200px;
+  margin-top: 300px;
   transform: translateY(-50%);
   overflow: hidden;
   display: flex;
@@ -135,15 +157,16 @@ body {
 }
 
 h1 {
-  	padding-top: 80px;
-    text-align: center;
-    width: 50%;
-    margin: auto;
-  	font-style: normal;
-    font-weight: 600;
-  	font-size: 50px;
- 	line-height: 53px;
-  	color: #272626;
+  padding-top: 80px;
+  text-align: center;
+  width: 50%;
+  margin: auto;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 50px;
+  line-height: 53px;
+  color: #272626;
+  font-family: Inter-Bold;
 }
 
 .loginButton {
@@ -159,20 +182,22 @@ form {
 
 .rulesRectangle {
   top: 50%;
-width: 1024px;
-margin-right: auto;
-margin-left: auto;
-margin-top: 400px;
-transform: translateY(-50%);
-background-color: #D3D3D3;
+  width: 1500px;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 400px;
+  transform: translateY(-50%);
+  background-color: #d3d3d3;
+  border-radius: 10px;
+  border: 1px solid #000;
 }
 
 .lobbyRectangle {
   width: 60%;
-  height: 349px;
-  background: #f7f7f7;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 10px;
   text-align: center;
+  padding-bottom: 50px;
 }
 
+.rulesRectangle > h4 {
+  text-align: center;
+}

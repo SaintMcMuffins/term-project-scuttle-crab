@@ -25,37 +25,39 @@
   <body>
     <!-- Navbar (sit on top) -->
     <% if (loggedIn) { %>
-  <div id="chat-container">
-      <p id="chat">Chat</p>
-      <div id="messages">
+      <div class="chat-area">
+        <div class="chat-box">
+          <div id="chat-container">
+            <p id="chat">Chat</p>
+            <div id="messages"></div>
+            <label>
+              <input
+                id="chat__message"
+                name="chat-message"
+                placeholder="Type a message..."
+              />
+            </label>
+        </div>
       </div>
-
-      <label>
-        <input
-          id="chat__message"
-          name="chat-message"
-          placeholder="Type a message..."
-        />
-      </label>
-  </div>
+    </div>
   <%} else {%>
-      <p id="chat">Chat</p>
-      <div id="messages">
+    <div class="not-logged-chat-area">
+      <div class="not-logged-chat-box">
+        <div id="not-logged-chat-container">
+          <p id="chat">Sign in to Chat</p>
+          <div id="messages"></div>
       </div>
-    <input
-    id="chat__message"
-    name="chat-message"
-    placeholder="Sign in to chat!"
-  />
+    </div>
+  </div>
     <% } %>   
 <div class="bigRectangle">
   <div class="innerRectangle">
     <% if (loggedIn) { %>
-    <h1>Hi <%= username %></h1>
+    <h1>Welcome, <%= username %> !</h1>
     <div class="gameblock">
       <div class="gamebuttons">
         <a href="/creategame" class="button">CREATE GAME</a>
-        <a href="/joingame" class="button">JOIN GAME</a>
+        <a href="/findgame" class="button">JOIN GAME</a>
         </div>
       </div>
     <%} else {%>

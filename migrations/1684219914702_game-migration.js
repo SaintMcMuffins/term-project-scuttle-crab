@@ -53,7 +53,7 @@ exports.up = (pgm) => {
       },
       deck_index: {
         type: "integer",
-        default: 1,
+        default: 0,
         notNull: true
       },
       discard: {
@@ -63,7 +63,7 @@ exports.up = (pgm) => {
       },
       discard_index: {
         type: "integer",
-        default: 1,
+        default: 0,
         notNull: true
       }
 
@@ -151,4 +151,5 @@ exports.up = (pgm) => {
    */
   exports.down = (pgm) => {
     pgm.dropTable("cards")
+    pgm.dropTable("games")
   };
