@@ -73,33 +73,59 @@ router.get("/game", (request, response) => {
 });
 
 router.get("/lobby/:id", async (request, response) => {
-  var player1_name, player2_name;
+  var player1_name, player2_name
+  var can_join = false
+  var game_started = false
   const loggedIn = request.session.username ? true : false;
-  try {
-    player1_name = await Games.player1_of_game_id(request.params.id);
-    host = await Games.host_of_game_id(request.params.id);
-    try {
-      player2_name = await Games.player2_of_game_id(request.params.id);
-    } catch {
-      // Player2 not in game yet, returned nothing on query
-      player2_name = { username: "" };
-    }
+  if (loggedIn == false){
+    response.redirect("/")
 
-    console.log(player1_name.username, player2_name.username);
-    response.render("lobby.ejs", {
-      title: "Lobby",
-      roomname: request.params.id,
-      host: player1_name.username,
-      players: [player1_name.username, player2_name.username],
-      ishost: request.session.user_id == host.player1_id,
-      message: "Gin Rummy: Lobby",
-      username: request.session.username,
-      loggedIn: loggedIn,
-    });
-  } catch (error) {
-    console.log({ error });
-    response.redirect("/");
+  }else {
+    try{
+        const game = await Games.get_game_by_id(request.params.id)
+        if(request.session.user_id == game.player1_id || request.session.user_id == game.player2_id){
+            can_join = true
+        }
+        game_started = (game.turn != -1)
+    }catch{
+        
+    }
   }
+  if(can_join == false){ // Not part of the game, go home
+    response.redirect("/")
+  }else{
+    if (game_started == true){// Game is started, so go there instead
+        response.redirect(`/games/${request.params.id}`)
+    }else{ // Join lobby
+        try {
+            player1_name = await Games.player1_of_game_id(request.params.id);
+            host = await Games.host_of_game_id(request.params.id);
+            try {
+                player2_name = await Games.player2_of_game_id(request.params.id);
+            } catch {
+                // Player2 not in game yet, returned nothing on query
+                player2_name = { username: "" };
+            }
+    
+    
+            response.render("lobby.ejs", {
+                title: "Lobby",
+                roomname: request.params.id,
+                host: player1_name.username,
+                players: [player1_name.username, player2_name.username],
+                ishost: request.session.user_id == host.player1_id,
+                message: "Gin Rummy: Lobby",
+                username: request.session.username,
+                loggedIn: loggedIn,
+            });
+        } catch (error) {
+            console.log({ error });
+            response.redirect("/");
+        }
+    }
+    
+  }
+  
 });
 
 router.get("/joinGame", (request, response) => {
