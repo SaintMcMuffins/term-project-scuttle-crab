@@ -105,6 +105,9 @@ const start_game = async (game_id) =>{
     // Check if game not started
     console.log("Game status is ", status.turn)
     if(status.turn == -1 && p2.player2_id != null){
+        await shuffle_deck(game_id)
+        await deal_hands(game_id)
+
         await db.none(
             `UPDATE games SET turn=1 WHERE game_id=$1`,
             [game_id]
@@ -190,6 +193,106 @@ const shuffle_deck = async(game_id) =>{
     }
 }
 
+// Pull player id's hand and the deck, then shift to hand
+// Since post request can call this, check if game is started first
+const draw_card = async(game_id, player_id, draw_count) =>{
+    if (draw_count == null){
+        draw_count = 1
+    }
+    if (await is_game_started(game_id) == false){
+        console.log("In draw card")
+        var player = await host_of_game_id(game_id)
+        var info = null
+        var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
+        console.log("Got ID of ", player.player1_id)
+        console.log("Requester's ID is ", player_id)
+        if (player.player1_id == player_id){
+            info = (await db.many(
+                `SELECT deck, hand1, deck_index FROM games WHERE game_id=$1`,
+                [game_id]
+            ))[0]
+        }else {
+            console.log("Player is not host")
+            player = await not_host_of_game_id(game_id) 
+            if (player.player2_id != null && player.player2_id == player_id){
+                info = (await db.many(
+                    `SELECT deck, hand2, deck_index FROM games WHERE game_id=$1`,
+                    [game_id]
+                ))[0]
+            }
+        }
+    
+
+        if (info != null){
+            if(info.hand1 != null){
+                hand = info.hand1
+            }else{
+                hand = info.hand2
+            }
+
+            var did_draw = false
+
+            for(i=0; i < draw_count; i++){
+                // Pop card from deck, place into first blank in hand
+                    // Does  not draw if hand is full
+                for(i=0; i < hand.length; i++){
+                    if (hand[i] == 0){
+                        hand[i] = info.deck.pop()
+                        did_draw = true
+                        break
+                    }
+                }
+    
+                if (did_draw == true){
+                    if (info.hand1 != null){
+                        await db.none(
+                            `UPDATE games SET hand1=$1 WHERE game_id=$2`,
+                            [hand, game_id]
+                        )
+        
+                    }else{
+                        await db.none(
+                            `UPDATE games SET hand2=$1 WHERE game_id=$2`,
+                            [hand, game_id]
+                        )
+                    }
+        
+                    await db.none(
+                        `UPDATE games SET deck=$1 WHERE game_id=$2`,
+                        [info.deck, game_id]
+                    )
+                }
+                did_draw = false
+            }
+            
+            
+        }
+    }
+    
+}
+
+// Gives 10 cards from deck to each player
+    // Calls draw_card
+const deal_hands = async(game_id) =>{
+    var game = await get_game_by_id(game_id)
+
+    await draw_card(game_id, game.player1_id, 10)
+    await draw_card(game_id, game.player2_id, 10)
+}
+
+const is_game_started = async(game_id) =>{
+    try{
+        const turn = await db.one(
+            `SELECT turn FROM games WHERE game_id=$1`,
+            [game_id]
+        )
+
+        return (turn.turn != -1)
+    }catch{
+        return false
+    }
+}
+
 
 module.exports = {
   createGameSQL,
@@ -207,6 +310,7 @@ module.exports = {
   join_game,
   get_game_by_id,
   find_open_game,
-
-  shuffle_deck
+  shuffle_deck,
+  deal_hands,
+  draw_card
 };

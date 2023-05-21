@@ -107,6 +107,12 @@ router.get("/lobby/:id", async (request, response) => {
                 player2_name = { username: "" };
             }
     
+            if (player2_name == null){
+                player2_name = { username: "" };
+
+            }
+            console.log(player1_name.username)
+            console.log(player2_name)
     
             response.render("lobby.ejs", {
                 title: "Lobby",
