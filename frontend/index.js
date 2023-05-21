@@ -19,16 +19,16 @@ socket.on("chat-message-received", ({username, message, timestamp}) => {
   messageContainer.appendChild(entry)
 })
 
-socket.on("redirect-to-game", ({game_id, user_id}) =>{
-    console.log("Socket caught it")
-    window.location.href = `/game/${game_id}`
+socket.on("redirect-to-game", ({game_id}) =>{
+    console.log("Socket caught it", game_id)
+    window.location.href = `/games/${game_id}`
 })
 
 const start_button = document.getElementById("start-game-button")
-if (start_button != null){
+// Send request to start game on start press
+if (start_button != null && start_button.value != null){
     start_button.addEventListener("click", () => {
-        console.log("Click")
-        fetch("/games/15/start", {
+        fetch(`/games/${start_button.value}/start`, {
             method: "post", 
             headers: {"Content-Type": "application/json"},
           

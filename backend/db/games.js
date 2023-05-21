@@ -69,13 +69,23 @@ const player2_of_game_id = async (game_id) =>{
 }
 
 const host_of_game_id = async (game_id) =>{
-    const name = await db.one(
+    const id = await db.one(
         `SELECT player1_id FROM games WHERE game_id=$1`,
         [game_id]
 
     )
 
-    return name
+    return id
+}
+
+const not_host_of_game_id = async (game_id) =>{
+    const id = await db.one(
+        `SELECT player2_id FROM games WHERE game_id=$1`,
+        [game_id]
+
+    )
+
+    return id
 }
 
 const start_game = async (game_id) =>{
@@ -84,13 +94,16 @@ const start_game = async (game_id) =>{
         [game_id]
     )
 
+    const p2 = await not_host_of_game_id(game_id)
+
     // Check if game not started
     console.log("Game status is ", status.turn)
-    if(status.turn != -1){
+    if(status.turn == -1 && p2.player2_id != null){
         await db.none(
             `UPDATE games SET turn=1 WHERE game_id=$1`,
             [game_id]
         )
+
     }
 }
 
@@ -149,6 +162,7 @@ module.exports = {
   player1_of_game_id,
   player2_of_game_id,
   host_of_game_id,
+  not_host_of_game_id,
   start_game,
   join_game,
   get_game_by_id,
