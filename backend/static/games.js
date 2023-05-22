@@ -158,7 +158,7 @@ const swap_turn = async (game, io) => {
   await Games.start_new_turn(game.game_id, new_turn, new_progress);
 
   console.log("New turn: ", p1)
-  await emit_new_turn(io, game.game_id, p1 == new_turn);
+  await emit_new_turn(io, game.game_id, p1 == new_turn, (new_progress < -1));
 };
 
 // Check if allowed to draw from destination, draw, emit for updates
@@ -342,7 +342,7 @@ const is_valid_access = (game, player_id) => {
 };
 
 // Get name of player whose turn it will be, emit to players in game
-const emit_new_turn = async (io, game_id, is_p1_turn) => {
+const emit_new_turn = async (io, game_id, is_p1_turn, is_passable_turn) => {
   var player = '';
 
   if (is_p1_turn == true) {
@@ -353,6 +353,7 @@ const emit_new_turn = async (io, game_id, is_p1_turn) => {
 
   io.to(`/games/${game_id}`).emit('update-turn', {
     player,
+    is_passable_turn
   });
 };
 
