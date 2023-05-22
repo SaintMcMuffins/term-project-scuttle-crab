@@ -16,6 +16,11 @@ exports.up = (pgm) => {
         notNull: true,
         default: -1
       },
+      turn_progress: {
+        type: "integer",
+        notNull: true,
+        default: -1
+      },
       complete: {
         type: "boolean",
         default: false
