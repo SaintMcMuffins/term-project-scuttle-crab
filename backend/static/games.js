@@ -91,6 +91,7 @@ router.get('/:id', async (request, response, next) => {
         hand: player_hand,
         discard_top: top_card,
         loggedIn: true,
+        can_pass: (game.turn_progress < -1)
       });
     } else {
       // Player tried to access game, but is not in game
@@ -137,6 +138,7 @@ const swap_turn = async (game) => {
 
   if (progress == TurnProgress.OppositeDraw) {
     new_progress = TurnProgress.DealerDraw;
+    console.log("Swap to DealerDraw. Can only draw from discard")
   } else {
     if (progress == TurnProgress.DealerDraw) {
       new_progress == TurnProgress.OppositeMustDraw;
