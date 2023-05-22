@@ -144,23 +144,26 @@ const swap_turn = async(game) =>{
     await Games.start_new_turn(game.game_id, new_turn, new_progress)
 
 
-    emit_new_turn(game_id, (p1==new_turn))
+    await emit_new_turn(game_id, (p1==new_turn))
 
 }
 
 // Check if allowed to draw from destination, draw, emit for updates
 router.post("/:id/draw_deck", async (request, response, next) => {
+    const io = request.app.get("io");
+
     const game_id = request.params.id
     const player = request.session.user_id
     const game = await Games.get_game_by_id(game_id)
 
-    if (!is_valid_access(game, player)){
+    if (is_valid_access(game, player) == false){
         return null
     }
 
     if(game.turn_progress == TurnProgress.Draw || game.turn_progress == TurnProgress.OppositeMustDraw){
         await Games.draw_card(game_id, player)
-
+        await emit_hand_update(io, game_id, player, (await Games.get_hand_by_player(game_id, player)))
+        await Games.set_turn_progress(game_id, TurnProgress.Middle)
     }
 
 
@@ -168,6 +171,8 @@ router.post("/:id/draw_deck", async (request, response, next) => {
 
 // Check if allowed to draw from destination, draw emit for updates
 router.post("/:id/draw_discard", async (request, response, next) => {
+    const io = request.app.get("io");
+
     const game_id = request.params.id
     const player = request.session.user_id
     const game = await Games.get_game_by_id(game_id)
@@ -179,30 +184,47 @@ router.post("/:id/draw_discard", async (request, response, next) => {
     if(game.turn_progress == TurnProgress.Draw || game.turn_progress == TurnProgress.OppositeDraw || game.turn_progress == TurnProgress.DealerDraw){
         var top_card = await Games.draw_from_discard(game_id, player)
 
-        await emit_discard(game_id, top_card)
-        await emit_hand_update(game_id, player, (await Games.get_hand_by_player(game_id, player)))
+        await emit_discard_update(io, game_id, top_card)
+        await emit_hand_update(io, game_id, player, (await Games.get_hand_by_player(game_id, player)))
+        await Games.set_turn_progress(game_id, TurnProgress.Middle)
 
     }
 
-
-    // If this was the first draw phase, end the turn
-    if(game.turn_progress == TurnProgress.OppositeDraw || game.turn_progress == TurnProgress.DealerDraw){
-        await swap_turn(game)
-    }
 })
 
+
+// Check if allowed to discard, discard, emit for updates
+router.post("/:id/discard", async (request, response, next) => {
+    const io = request.app.get("io");
+    const game_id = request.params.id
+    const player = request.session.user_id
+    const game = await Games.get_game_by_id(game_id)
+
+    if (is_valid_access(game, player)){
+        return null
+    }
+
+    if(game.turn_progress == TurnProgress.Middle){
+        // TODO Something with the request body to know what index to discard?
+        var index = 2
+        var top_card = await Games.discard_from_hand(game_id, player, index)
+        await emit_discard_update(io, game_id, top_card)
+
+        await emit_hand_update(io, game_id, player, (await Games.get_hand_by_player(game_id, player)))
+    }
+})
 
 // Returns true if:
     // Game exists
     // Game is not complete
     // Player is in game, it is the player's turn, and the game is started
         // These three are the same check, since turn = some player_id if game is started
-const is_valid_access = async(game, player_id) =>{
+const is_valid_access = (game, player_id) =>{
     return (game != null && game.completed != false && game.turn == player_id)
 }
 
 // Get name of player whose turn it will be, emit to players in game
-const emit_new_turn = async (game_id, is_p1_turn) =>{
+const emit_new_turn = async (io, game_id, is_p1_turn) =>{
     var player = ""
 
     if(is_p1_turn == true){
@@ -218,7 +240,7 @@ const emit_new_turn = async (game_id, is_p1_turn) =>{
     })
 }
 
-const emit_discard = async(game_id, top_card) =>{
+const emit_discard_update = async(io, game_id, top_card) =>{
     if (top_card == null){
         top_card = 0
     }
@@ -227,8 +249,8 @@ const emit_discard = async(game_id, top_card) =>{
     })
 }
 
-const emit_hand_update = async(game_id, player, hand) =>{
-    io.to(`/games/${game_id}/${player}`).emit("update-discard-pile",{
+const emit_hand_update = async(io, game_id, player, hand) =>{
+    io.to(`/games/${game_id}/${player}`).emit("update-hand",{
         hand
     })
 }

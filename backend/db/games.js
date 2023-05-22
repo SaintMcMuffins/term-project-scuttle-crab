@@ -215,81 +215,75 @@ const draw_card = async(game_id, player_id, draw_count) =>{
     if (draw_count == null){
         draw_count = 1
     }
-    if (await is_game_started(game_id) == false){
-        console.log("In draw card")
-        var player = await host_of_game_id(game_id)
-        var info = null
-        var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
-        console.log("Got ID of ", player.player1_id)
-        console.log("Requester's ID is ", player_id)
-        if (player.player1_id == player_id){
+    var player = await host_of_game_id(game_id)
+    var info = null
+    var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
+    if (player.player1_id == player_id){
+        info = (await db.many(
+            `SELECT deck, hand1, deck_index FROM games WHERE game_id=$1`,
+            [game_id]
+        ))[0]
+    }else {
+        console.log("Player is not host")
+        player = await not_host_of_game_id(game_id) 
+        if (player.player2_id != null && player.player2_id == player_id){
             info = (await db.many(
-                `SELECT deck, hand1, deck_index FROM games WHERE game_id=$1`,
+                `SELECT deck, hand2, deck_index FROM games WHERE game_id=$1`,
                 [game_id]
             ))[0]
-        }else {
-            console.log("Player is not host")
-            player = await not_host_of_game_id(game_id) 
-            if (player.player2_id != null && player.player2_id == player_id){
-                info = (await db.many(
-                    `SELECT deck, hand2, deck_index FROM games WHERE game_id=$1`,
-                    [game_id]
-                ))[0]
-            }
         }
-    
+    }
 
-        if (info != null){
-            if(info.hand1 != null){
-                hand = info.hand1
-            }else{
-                hand = info.hand2
+
+    if (info != null){
+        if(info.hand1 != null){
+            hand = info.hand1
+        }else{
+            hand = info.hand2
+        }
+
+        var did_draw = false
+
+        for(i=0; i < draw_count; i++){
+            // Pop card from deck, place into first blank in hand
+                // Does  not draw if hand is full
+            for(i=0; i < hand.length; i++){
+                if (hand[i] == 0){
+                    hand[i] = info.deck.pop()
+                    did_draw = true
+                    break
+                }
             }
 
-            var did_draw = false
-
-            for(i=0; i < draw_count; i++){
-                // Pop card from deck, place into first blank in hand
-                    // Does  not draw if hand is full
-                for(i=0; i < hand.length; i++){
-                    if (hand[i] == 0){
-                        hand[i] = info.deck.pop()
-                        did_draw = true
-                        break
-                    }
-                }
-    
-                if (did_draw == true){
-                    if (info.hand1 != null){
-                        await db.none(
-                            `UPDATE games SET hand1=$1 WHERE game_id=$2`,
-                            [hand, game_id]
-                        )
-        
-                    }else{
-                        await db.none(
-                            `UPDATE games SET hand2=$1 WHERE game_id=$2`,
-                            [hand, game_id]
-                        )
-                    }
-        
+            if (did_draw == true){
+                if (info.hand1 != null){
                     await db.none(
-                        `UPDATE games SET deck=$1 WHERE game_id=$2`,
-                        [info.deck, game_id]
+                        `UPDATE games SET hand1=$1 WHERE game_id=$2`,
+                        [hand, game_id]
+                    )
+    
+                }else{
+                    await db.none(
+                        `UPDATE games SET hand2=$1 WHERE game_id=$2`,
+                        [hand, game_id]
                     )
                 }
-                did_draw = false
+    
+                await db.none(
+                    `UPDATE games SET deck=$1 WHERE game_id=$2`,
+                    [info.deck, game_id]
+                )
             }
-            
-            
+            did_draw = false
         }
+        
+        
     }
     
 }
 
 // Pull player id's hand and the discard pile, then move cards
 const draw_from_discard = async(game_id, player_id) =>{
-    console.log("In draw from discard")
     var player = await host_of_game_id(game_id)
     var info = null
     var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
@@ -395,6 +389,34 @@ const discard_from_deck = async(game_id) =>{
     console.log(index)
 }
 
+const discard_from_hand = async(game_id, player_id, index) =>{
+    var game = await get_game_by_id(game_id)
+
+    console.log(player_id, index)
+    var new_index = game.discard_index+1
+    var hand = await get_hand_by_player(game_id, player_id)
+    console.log(hand)
+
+    game.discard[new_index] = hand[index]
+
+    hand[index] = 0
+
+    if (player_id == game.player1_id){
+        await db.none(
+            `UPDATE games SET discard=$1, hand1=$2, discard_index=$3 WHERE game_id=$4`,
+            [game.discard, hand, new_index, game_id]
+        )
+    }else{
+        await db.none(
+            `UPDATE games SET discard=$1, hand2=$2, discard_index=$3 WHERE game_id=$4`,
+            [game.discard, hand, new_index, game_id]
+        )
+    }
+
+    return game.discard[new_index]
+    
+}
+
 const is_game_started = async(game_id) =>{
     try{
         const turn = await db.one(
@@ -428,6 +450,13 @@ const get_hand_by_player = async(game_id, player_id) =>{
     }
 }
 
+const set_turn_progress = async(game_id, progress) =>{
+    await db.none(
+        `UPDATE games SET turn_progress=$1 WHERE game_id=$2`,
+        [progress, game_id]
+    )
+}
+
 
 module.exports = {
   createGameSQL,
@@ -450,5 +479,7 @@ module.exports = {
   deal_hands,
   draw_card,
   draw_from_discard,
+  discard_from_hand,
+  set_turn_progress,
   start_new_turn
 };
