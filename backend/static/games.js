@@ -304,7 +304,7 @@ const emit_discard_update = async (io, game_id, top_card) => {
     top_card = 0;
   }
   io.to(`/games/${game_id}`).emit('update-discard-pile', {
-    top_card,
+    discard_top: top_card,
   });
 };
 

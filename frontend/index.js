@@ -52,9 +52,9 @@ socket.on('update-hand', ({ hand }) => {
   }
 });
 
-socket.on('update-discard-pile', ({ top_card }) => {
-  const discardPileElement = document.getElementById(`card${discard_top}`);
-  discardPileElement.id = 'card' + top_card; // update top card id
+socket.on('update-discard-pile', ({ discard_top }) => {
+  var discardPileElement = document.getElementById(`card${discard_top}`);
+  discardPileElement.id = 'card' + discard_top; // update top card id
 });
 
 const start_button = document.getElementById('start-game-button');
