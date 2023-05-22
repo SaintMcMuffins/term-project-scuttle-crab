@@ -84,6 +84,7 @@ if (chat_box != null) {
 // puts clicked cards into an array to be checked if meld possible or not
 const select_card = document.querySelectorAll('.p1-item');
 var selected_cards = [];
+var draw_pile = [10];
 
 select_card.forEach((card) => {
   card.addEventListener('click', (event) => {
@@ -119,7 +120,7 @@ if (discard_button != null && discard_button.value != null) {
 const meld_button = document.getElementById('meld-button');
 if (meld_button != null && meld_button.value != null) {
   meld_button.addEventListener('click', () => {
-    fetch(`/games/${game_id}/meld`, {
+    fetch(`/games/${meld_button.value}/meld`, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ selected_cards }),
@@ -129,18 +130,19 @@ if (meld_button != null && meld_button.value != null) {
 const draw_card = document.getElementById('draw-card');
 if (draw_card != null && draw_card.value != null) {
   draw_card.addEventListener('click', () => {
-    fetch(`/games/${draw_card.value}/meld`, {
+    fetch(`/games/${draw_card.value}/draw`, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ selected_cards }),
+      body: JSON.stringify({ draw_pile }),
+      
     });
-    console.log('Cards you selected:', selected_cards);
+    console.log('Drew:', draw_pile);
   });
 }
 const knock_button = document.getElementById('knock-button');
 if (knock_button != null && knock_button.value != null) {
   knock_button.addEventListener('click', () => {
-    fetch(`/games/${knock_button.value}/meld`, {
+    fetch(`/games/${knock_button.value}/knock`, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ selected_cards }),
