@@ -122,9 +122,11 @@ const start_game = async (game_id) =>{
         await deal_hands(game_id)
         await discard_from_deck(game_id)
 
+        // Start game with turn = player2 ID, and also set turn progress to -3
+            // See enum in frontend > games
         await db.none(
-            `UPDATE games SET turn=1 WHERE game_id=$1`,
-            [game_id]
+            `UPDATE games SET turn=$1, turn_progress=$2 WHERE game_id=$3`,
+            [p2.player2_id, -3, game_id]
         )
 
     }
@@ -213,76 +215,142 @@ const draw_card = async(game_id, player_id, draw_count) =>{
     if (draw_count == null){
         draw_count = 1
     }
-    if (await is_game_started(game_id) == false){
-        console.log("In draw card")
-        var player = await host_of_game_id(game_id)
-        var info = null
-        var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
-        console.log("Got ID of ", player.player1_id)
-        console.log("Requester's ID is ", player_id)
-        if (player.player1_id == player_id){
+    var player = await host_of_game_id(game_id)
+    var info = null
+    var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
+    if (player.player1_id == player_id){
+        info = (await db.many(
+            `SELECT deck, hand1, deck_index FROM games WHERE game_id=$1`,
+            [game_id]
+        ))[0]
+    }else {
+        console.log("Player is not host")
+        player = await not_host_of_game_id(game_id) 
+        if (player.player2_id != null && player.player2_id == player_id){
             info = (await db.many(
-                `SELECT deck, hand1, deck_index FROM games WHERE game_id=$1`,
+                `SELECT deck, hand2, deck_index FROM games WHERE game_id=$1`,
                 [game_id]
             ))[0]
-        }else {
-            console.log("Player is not host")
-            player = await not_host_of_game_id(game_id) 
-            if (player.player2_id != null && player.player2_id == player_id){
-                info = (await db.many(
-                    `SELECT deck, hand2, deck_index FROM games WHERE game_id=$1`,
-                    [game_id]
-                ))[0]
-            }
-        }
-    
-
-        if (info != null){
-            if(info.hand1 != null){
-                hand = info.hand1
-            }else{
-                hand = info.hand2
-            }
-
-            var did_draw = false
-
-            for(i=0; i < draw_count; i++){
-                // Pop card from deck, place into first blank in hand
-                    // Does  not draw if hand is full
-                for(i=0; i < hand.length; i++){
-                    if (hand[i] == 0){
-                        hand[i] = info.deck.pop()
-                        did_draw = true
-                        break
-                    }
-                }
-    
-                if (did_draw == true){
-                    if (info.hand1 != null){
-                        await db.none(
-                            `UPDATE games SET hand1=$1 WHERE game_id=$2`,
-                            [hand, game_id]
-                        )
-        
-                    }else{
-                        await db.none(
-                            `UPDATE games SET hand2=$1 WHERE game_id=$2`,
-                            [hand, game_id]
-                        )
-                    }
-        
-                    await db.none(
-                        `UPDATE games SET deck=$1 WHERE game_id=$2`,
-                        [info.deck, game_id]
-                    )
-                }
-                did_draw = false
-            }
-            
-            
         }
     }
+
+
+    if (info != null){
+        if(info.hand1 != null){
+            hand = info.hand1
+        }else{
+            hand = info.hand2
+        }
+
+        var did_draw = false
+
+        for(i=0; i < draw_count; i++){
+            // Pop card from deck, place into first blank in hand
+                // Does  not draw if hand is full
+            for(i=0; i < hand.length; i++){
+                if (hand[i] == 0){
+                    hand[i] = info.deck.pop()
+                    did_draw = true
+                    break
+                }
+            }
+
+            if (did_draw == true){
+                if (info.hand1 != null){
+                    await db.none(
+                        `UPDATE games SET hand1=$1 WHERE game_id=$2`,
+                        [hand, game_id]
+                    )
     
+                }else{
+                    await db.none(
+                        `UPDATE games SET hand2=$1 WHERE game_id=$2`,
+                        [hand, game_id]
+                    )
+                }
+    
+                await db.none(
+                    `UPDATE games SET deck=$1 WHERE game_id=$2`,
+                    [info.deck, game_id]
+                )
+            }
+            did_draw = false
+        }
+        
+        
+    }
+    
+}
+
+// Pull player id's hand and the discard pile, then move cards
+const draw_from_discard = async(game_id, player_id) =>{
+    var player = await host_of_game_id(game_id)
+    var info = null
+    var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
+    if (player.player1_id == player_id){
+        info = (await db.many(
+            `SELECT discard, hand1, discard_index FROM games WHERE game_id=$1`,
+            [game_id]
+        ))[0]
+    }else {
+        console.log("Player is not host")
+        player = await not_host_of_game_id(game_id) 
+        if (player.player2_id != null && player.player2_id == player_id){
+            info = (await db.many(
+                `SELECT discard, hand2, discard_index FROM games WHERE game_id=$1`,
+                [game_id]
+            ))[0]
+        }
+    }
+
+
+    if (info != null){
+        if(info.hand1 != null){
+            hand = info.hand1
+        }else{
+            hand = info.hand2
+        }
+
+        // Grab card, then zero out and decrement index
+        var card = info.discard[info.discard_index]
+        info.discard[info.discard_index] = 0
+        var new_index = info.discard_index - 1
+
+        var did_draw = false
+
+        // Does  not draw if hand is full
+        for(i=0; i < hand.length; i++){
+            if (hand[i] == 0){
+                hand[i] =  card
+                did_draw = true
+                break
+            }
+        }
+
+        if (did_draw == true){
+            if (info.hand1 != null){
+                await db.none(
+                    `UPDATE games SET hand1=$1 WHERE game_id=$2`,
+                    [hand, game_id]
+                )
+
+            }else{
+                await db.none(
+                    `UPDATE games SET hand2=$1 WHERE game_id=$2`,
+                    [hand, game_id]
+                )
+            }
+
+            await db.none(
+                `UPDATE games SET discard=$1, discard_index=$2 WHERE game_id=$3`,
+                [info.discard, new_index, game_id]
+            )
+        }
+
+        return info.discard[info.discard_index]
+    }
+        
+        
 }
 
 // Gives 10 cards from deck to each player
@@ -310,8 +378,8 @@ const discard_from_deck = async(game_id) =>{
 
 
     await db.none(
-        `UPDATE games SET deck=$1, discard=$2, discard_index=$3`,
-        [deck, discard, index] 
+        `UPDATE games SET deck=$1, discard=$2, discard_index=$3 WHERE game_id=$4`,
+        [deck, discard, index, game_id] 
     )
 
     game = await get_game_by_id(game_id)
@@ -319,6 +387,34 @@ const discard_from_deck = async(game_id) =>{
     console.log(deck)
     console.log(discard)
     console.log(index)
+}
+
+const discard_from_hand = async(game_id, player_id, index) =>{
+    var game = await get_game_by_id(game_id)
+
+    console.log(player_id, index)
+    var new_index = game.discard_index+1
+    var hand = await get_hand_by_player(game_id, player_id)
+    console.log(hand)
+
+    game.discard[new_index] = hand[index]
+
+    hand[index] = 0
+
+    if (player_id == game.player1_id){
+        await db.none(
+            `UPDATE games SET discard=$1, hand1=$2, discard_index=$3 WHERE game_id=$4`,
+            [game.discard, hand, new_index, game_id]
+        )
+    }else{
+        await db.none(
+            `UPDATE games SET discard=$1, hand2=$2, discard_index=$3 WHERE game_id=$4`,
+            [game.discard, hand, new_index, game_id]
+        )
+    }
+
+    return game.discard[new_index]
+    
 }
 
 const is_game_started = async(game_id) =>{
@@ -334,6 +430,33 @@ const is_game_started = async(game_id) =>{
     }
 }
 
+const start_new_turn = async(game_id, new_turn, turn_progress) =>{
+    await db.none(
+        `UPDATE games SET turn=$1, turn_progress=$2 WHERE game_id=$3`,
+        [new_turn, turn_progress, game_id]
+    )
+}
+
+const get_hand_by_player = async(game_id, player_id) =>{
+    const info = await db.one(
+        `SELECT player1_id, player2_id, hand1, hand2 FROM games WHERE game_id=$1`,
+        [game_id]
+    )
+
+    if(info.player1_id == player_id){
+        return info.hand1
+    }else{
+        return info.hand2
+    }
+}
+
+const set_turn_progress = async(game_id, progress) =>{
+    await db.none(
+        `UPDATE games SET turn_progress=$1 WHERE game_id=$2`,
+        [progress, game_id]
+    )
+}
+
 
 module.exports = {
   createGameSQL,
@@ -347,11 +470,16 @@ module.exports = {
   player2_of_game_id,
   host_of_game_id,
   not_host_of_game_id,
+  get_hand_by_player,
   start_game,
   join_game,
   get_game_by_id,
   find_open_game,
   shuffle_deck,
   deal_hands,
-  draw_card
+  draw_card,
+  draw_from_discard,
+  discard_from_hand,
+  set_turn_progress,
+  start_new_turn
 };
