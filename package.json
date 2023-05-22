@@ -12,7 +12,9 @@
     "db:create": "node-pg-migrate create -- ",
     "db:migrate": "node-pg-migrate up",
     "db:rollback": "node-pg-migrate down",
-    "postinstall": "npm run db:migrate"
+    "postinstall": "npm run db:migrate",
+    "format:ejs": "prettier --write --parser=html \"backend/**/*.ejs\"",
+    "format:jscss": "prettier --write \"backend/**/*.js\" \"backend/**/*.css\""
   },
   "repository": {
     "type": "git",
@@ -49,6 +51,7 @@
     "connect-livereload": "^0.6.1",
     "livereload": "^0.9.3",
     "nodemon": "^2.0.22",
+    "prettier": "^2.8.8",
     "webpack": "^5.82.0",
     "webpack-cli": "^5.0.1"
   }
