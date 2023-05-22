@@ -303,7 +303,6 @@ const emit_hand_update = async (io, game_id, player, hand) => {
 };
 
 const emit_error_message = async(io, player, location, message) =>{
-  const message = message;
   const username =  "!!ERROR!!";
   const timestamp = new Date().toISOString();
 
