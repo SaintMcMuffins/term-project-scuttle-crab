@@ -110,25 +110,34 @@ router.get('/:id', async (request, response, next) => {
 // Check if allowed to end turn now
 // Change turns
 router.post('/:id/end_turn', async (request, response, next) => {
+  const io = request.app.get('io');
   const game_id = request.params.id;
   const player = request.session.user_id;
   const game = await Games.get_game_by_id(game_id);
 
   if (!is_valid_access(game, player)) {
+    response.send();
+
+    response.status(403);
     return null;
   }
 
-  if (game.turn_progress == TurnProgress.Middle) {
-    await swap_turn(game);
+  if (game.turn_progress == TurnProgress.Middle || game.turn_progress == TurnProgress.OppositeDraw || game.turn_progress == TurnProgress.DealerDraw) {
+    await swap_turn(game, io);
+    response.send();
+
+    response.status(200);
   }else{
-    console.log("Couldn't end turn")
+    response.send();
+
+    response.status(500); // Couldn't end turn for some reason
   }
 });
 
-const swap_turn = async (game) => {
+const swap_turn = async (game, io) => {
   const p1 = game.player1_id;
   const p2 = game.player2_id;
-  const current_turn = game.turn;
+  var current_turn = game.turn;
   var new_turn = p1;
   var progress = game.turn_progress;
   var new_progress = 0;
@@ -141,13 +150,15 @@ const swap_turn = async (game) => {
     console.log("Swap to DealerDraw. Can only draw from discard")
   } else {
     if (progress == TurnProgress.DealerDraw) {
+        console.log("Swap to opposite. Can only draw from deck, cannot pass anymore")
       new_progress == TurnProgress.OppositeMustDraw;
     }
   }
 
   await Games.start_new_turn(game.game_id, new_turn, new_progress);
 
-  await emit_new_turn(game_id, p1 == new_turn);
+  console.log("New turn: ", p1)
+  await emit_new_turn(io, game.game_id, p1 == new_turn);
 };
 
 // Check if allowed to draw from destination, draw, emit for updates
@@ -270,8 +281,8 @@ router.post('/:id/discard', async (request, response, next) => {
       );
 
         // HEYY: Set this to end turn somewhere, probably just call swap turn instead
-      await Games.set_turn_progress(game_id, TurnProgress.Draw);
-
+     // await Games.set_turn_progress(game_id, TurnProgress.Draw);
+      await swap_turn(game, io)
       response.send();
 
       response.status(200);
