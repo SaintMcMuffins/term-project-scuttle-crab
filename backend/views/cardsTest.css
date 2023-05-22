@@ -1,3 +1,9 @@
+#card0 {
+  background: url("../images/card_back_113x158.jpg");
+  display: inline-block;
+  width: 113px;
+  height: 158px;
+}/*# sourceMappingURL=cardsTest.css.map */
 #card1 {
   background: url("../images/113x158.jpg") -0px -0px;
   display: inline-block;
@@ -357,13 +363,6 @@
 
 #card52 {
   background: url("../images/113x158.jpg") -1356px -474px;
-  display: inline-block;
-  width: 113px;
-  height: 158px;
-}/*# sourceMappingURL=cardsTest.css.map */
-
-#card53 {
-  background: url("../images/card_back_113x158.jpg") 0 0;
   display: inline-block;
   width: 113px;
   height: 158px;

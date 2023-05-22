@@ -16,6 +16,11 @@ exports.up = (pgm) => {
         notNull: true,
         default: -1
       },
+      turn_progress: {
+        type: "integer",
+        notNull: true,
+        default: -1
+      },
       complete: {
         type: "boolean",
         default: false
@@ -37,14 +42,14 @@ exports.up = (pgm) => {
         default: null
       },
       hand1: {
-        type: "integer[10]",
+        type: "integer[11]",
         notNull: true,
-        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
+        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
       },
       hand2: {
-        type: "integer[10]",
+        type: "integer[11]",
         notNull: true,
-        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
+        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
       },
       deck: {
         type: "integer[52]",
@@ -57,9 +62,9 @@ exports.up = (pgm) => {
         notNull: true
       },
       discard: {
-        type: "integer[52]",
+        type: "integer[53]",
         notNull: true,
-        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
+        default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}'
       },
       discard_index: {
         type: "integer",

@@ -7,25 +7,9 @@
   <head>
     <title><%= title %></title>
     <script type="module" src="/scripts/bundle.js" defer></script>
-    <link rel="stylesheet" type="text/css" href="/home.css" />
+        <link rel="stylesheet" type="text/css" href="/home.css" />
+    <%- include('header') %>
   </head>
-  <header>
-    <title><%= title %></title>
-    <script type="module" src="/scripts/bundle.js" defer></script>
-    <link rel="stylesheet" type="text/css" href="/home.css" />
-    <div class="header-bar">
-      <h2><a class="logo" href="/"><b>GIN RUMMY</b></a></h2>
-      <% if (loggedIn) { %>
-          <div class="header-items"><a href="/logout" class="button">Logout</a></div>
-          <div class="header-items"><a href="/rules" class="button">Rules</a></div>
-          
-        <%} else {%>
-          <div class="header-items"><a href="/register" class="button">Register</a></div>
-          <div class="header-items"><a href="/login" class="button">Login</a></div>
-          <div class="header-items"><a href="/rules" class="button">Rules</a></div>
-          <% } %>   
-    </div>
-  </header>
   <body>
 
 <div class="gameblock">

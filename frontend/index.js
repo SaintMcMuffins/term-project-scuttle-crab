@@ -1,3 +1,4 @@
+const { response } = require("express");
 const io = require("socket.io-client");
 const socket = io();
 const messageContainer = document.querySelector("#messages");
@@ -42,6 +43,18 @@ socket.on("player-joined-lobby", ({ p2 }) => {
   }
 });
 
+socket.on("update-hand", ({hand}) => {
+  var handElement = document.getElementsByClassName('p1-item');
+  for (var i = 0; i < handElement.length; i++) {
+    var cardElement = handElement[i];
+    if (i < hand.length) {
+      cardElement.id = 'card' + hand[i]; // update card id
+    }
+  }
+});
+
+
+
 const start_button = document.getElementById("start-game-button");
 // Send request to start game on start press
 if (start_button != null && start_button.value != null) {
@@ -71,3 +84,30 @@ if (chat_box != null) {
     });
   });
 }
+// puts clicked cards into an array to be checked if meld possible or not
+const select_card = document.querySelectorAll(".p1-item");
+var selected_cards = [];
+
+select_card.forEach((card) => {
+  card.addEventListener("click", (event) => {
+    const clickedCard = event.target;
+    const cardIndex = Array.from(select_card).indexOf(clickedCard);
+    
+    selected_cards.push(cardIndex);
+
+    console.log( "cards you selected: ", selected_cards );
+    })
+  });
+
+const meld_button = document.getElementById("meld-button");
+  if(meld_button != null && meld_button.value != null) {
+    meld_button.addEventListener('click', () => {
+      fetch(`/games/${game_id}/meld`, {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selected_cards }),
+      });
+    })
+  }
+  // TODO: meld validation from selected cards & emit
+

@@ -1,0 +1,30 @@
+.chat-area {
+    grid-area: 1 / 1 / 4 / 2; 
+    padding: 30px;
+  }
+  
+  .chat-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 20px;
+    background-color: #d9d9d9;
+    padding: 10px;
+    height: calc(100% - 2px); /* Subtract 2px to account for the border */
+  }
+  #chat  {
+    
+    color: #333;
+    text-decoration: none;
+    font-family: Inter-ExtraBold;
+    font-size: 20px;
+  }
+  #chat__message {
+    color: black;
+    font-family: Inter-Regular;
+  }
+  #messages {
+    color: black;
+    font-family: Inter-Regular;
+  }

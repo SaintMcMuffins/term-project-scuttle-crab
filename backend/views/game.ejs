@@ -4,31 +4,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!--npm install socket.io-client-->
 
-  <header>
+  <head>
     <title><%= title %></title>
     <script type="module" src="/scripts/bundle.js" defer></script>
-    <link rel="stylesheet" type="text/css" href="/game.css" />
-    <div class="header-bar">
-      <h2>
-        <a class="logo" href="/"><b>GIN RUMMY</b></a>
-      </h2>
-      <% if (loggedIn) { %>
-      <div class="header-items"><a href="/logout" class="button">Logout</a></div>
-
-      <%} else {%>
-      <div class="header-items">
-        <a href="/register" class="button">Register</a>
-      </div>
-      <div class="header-items"><a href="/login" class="button">Login</a></div>
-      <% } %>
-    </div>
-  </header>
+        <link rel="stylesheet" type="text/css" href="/game.css" />
+    <%- include('header') %>
+  </head>
 
   <body>
     <!-- Navbar (sit on top) -->
 
     <div class="parent-container">
-      <!-- ----------------------------chat---------------------- -->
+      <!-- Chat area -->
       <div class="chat-area">
         <div class="chat-box">
           <div id="chat-container">
@@ -41,46 +28,55 @@
                 placeholder="Type a message..."
               />
             </label>
+          </div>
         </div>
+      </div>
+      
+      <!-- UI area -->
+      <div class="ui-area">
+        <!-- UI area content goes here -->
+        <div class="ui-container">
+          <button style="--clr:#39FF14" class="b1"><span>Draw</span><i></i></button>
+          <button style="--clr:#FF44CC" class="b2"><span>Discard</span><i></i></button>
+          <button style="--clr:#0FF0FC" class="b3"><span>Meld</span><i></i></button>
+          <button style="--clr:#8A2BE2" class="b4"><span>Knock</span><i></i></button>
+        </div>
+      </div>
+      <!-- UI area -->
+      <div class="spacing-area">
+        <div class="spacing-container"></div>
+      </div>
+
+      
+      <!-- Game container -->
+      <div class="game-container">
+        <div class="board">
+          <div class="card-area">
+            <!-- Card area content goes here -->
+            <div class="pile" id="card<%= discard_top %>"></div>
+            
+            <!-- First player's card hand content goes here -->
+            <% hand.forEach(function(c) { %>
+              <div class="p1-item" id="card<%= c %>"></div>
+            <% }); %>
+      
+            <!-- Second player's card hand content goes here -->
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
-<!-- ----------------------------ui---------------------- -->
-      <div class="ui-area">
-
-      </div>
-<!-- ----------------------------game---------------------- -->
-      <div class="game-container">
-        
-        
-        <div class="card-area">
-          <!-- Card area content goes here -->
-          <div class="deck"><button id="card53"></button></div>
-          <div class="pile" id="card53"></div>
-            <!-- First player's card hand content goes here -->
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-            <div class="p1-item" id="card53"></div>
-
-            <!-- Second player's card hand content goes here -->
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-            <div class="p2-item" id="card53"></div>
-        </div>
-      </div>
-  </div>
+    
   </body>
 </html>
