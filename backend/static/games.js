@@ -19,7 +19,6 @@ const TurnProgress = {
     OppositeMustDraw: -1,
     Draw: 0,
     Middle: 1,
-    Discard: 2,
 }
 
 
@@ -117,7 +116,10 @@ router.post("/:id/end_turn", async (request, response, next) => {
         return null
     }
 
+    if(game.turn_progress == TurnProgress.Middle){
+        await swap_turn(game)
 
+    }
 })
 
 const swap_turn = async(game) =>{
@@ -140,7 +142,55 @@ const swap_turn = async(game) =>{
     }
 
     await Games.start_new_turn(game.game_id, new_turn, new_progress)
+
+
+    emit_new_turn(game_id, (p1==new_turn))
+
 }
+
+// Check if allowed to draw from destination, draw, emit for updates
+router.post("/:id/draw_deck", async (request, response, next) => {
+    const game_id = request.params.id
+    const player = request.session.user_id
+    const game = await Games.get_game_by_id(game_id)
+
+    if (!is_valid_access(game, player)){
+        return null
+    }
+
+    if(game.turn_progress == TurnProgress.Draw || game.turn_progress == TurnProgress.OppositeMustDraw){
+        await Games.draw_card(game_id, player)
+
+    }
+
+
+})
+
+// Check if allowed to draw from destination, draw emit for updates
+router.post("/:id/draw_discard", async (request, response, next) => {
+    const game_id = request.params.id
+    const player = request.session.user_id
+    const game = await Games.get_game_by_id(game_id)
+
+    if (!is_valid_access(game, player)){
+        return null
+    }
+
+    if(game.turn_progress == TurnProgress.Draw || game.turn_progress == TurnProgress.OppositeDraw || game.turn_progress == TurnProgress.DealerDraw){
+        var top_card = await Games.draw_from_discard(game_id, player)
+
+        await emit_discard(game_id, top_card)
+        await emit_hand_update(game_id, player, (await Games.get_hand_by_player(game_id, player)))
+
+    }
+
+
+    // If this was the first draw phase, end the turn
+    if(game.turn_progress == TurnProgress.OppositeDraw || game.turn_progress == TurnProgress.DealerDraw){
+        await swap_turn(game)
+    }
+})
+
 
 // Returns true if:
     // Game exists
@@ -149,6 +199,38 @@ const swap_turn = async(game) =>{
         // These three are the same check, since turn = some player_id if game is started
 const is_valid_access = async(game, player_id) =>{
     return (game != null && game.completed != false && game.turn == player_id)
+}
+
+// Get name of player whose turn it will be, emit to players in game
+const emit_new_turn = async (game_id, is_p1_turn) =>{
+    var player = ""
+
+    if(is_p1_turn == true){
+        player = (await Games.player1_of_game_id(game_id)).username
+
+    }else{
+        player = (await Games.player1_of_game_id(game_id)).username
+
+    }
+
+    io.to(`/games/${game_id}`).emit("update-turn",{
+        player
+    })
+}
+
+const emit_discard = async(game_id, top_card) =>{
+    if (top_card == null){
+        top_card = 0
+    }
+    io.to(`/games/${game_id}`).emit("update-discard-pile",{
+        top_card
+    })
+}
+
+const emit_hand_update = async(game_id, player, hand) =>{
+    io.to(`/games/${game_id}/${player}`).emit("update-discard-pile",{
+        hand
+    })
 }
 
 
