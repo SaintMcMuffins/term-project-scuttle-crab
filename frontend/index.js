@@ -43,6 +43,18 @@ socket.on("player-joined-lobby", ({ p2 }) => {
   }
 });
 
+socket.on("update-hand", ({hand}) => {
+  var handElement = document.getElementsByClassName('p1-item');
+  for (var i = 0; i < handElement.length; i++) {
+    var cardElement = handElement[i];
+    if (i < hand.length) {
+      cardElement.id = 'card' + hand[i]; // update card id
+    }
+  }
+});
+
+
+
 const start_button = document.getElementById("start-game-button");
 // Send request to start game on start press
 if (start_button != null && start_button.value != null) {
