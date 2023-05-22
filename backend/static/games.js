@@ -120,6 +120,8 @@ router.post('/:id/end_turn', async (request, response, next) => {
 
   if (game.turn_progress == TurnProgress.Middle) {
     await swap_turn(game);
+  }else{
+    console.log("Couldn't end turn")
   }
 });
 
@@ -171,6 +173,11 @@ router.post('/:id/draw_deck', async (request, response, next) => {
       await Games.get_hand_by_player(game_id, player)
     );
     await Games.set_turn_progress(game_id, TurnProgress.Middle);
+  }else{
+    const location = `/games/${game_id}/${player}`
+    const message = "You cannot draw from the stock right now"
+
+    await emit_error_message(io, player, location, message)
   }
 });
 
@@ -201,6 +208,11 @@ router.post('/:id/draw_discard', async (request, response, next) => {
       await Games.get_hand_by_player(game_id, player)
     );
     await Games.set_turn_progress(game_id, TurnProgress.Middle);
+  }else{
+    const location = `/games/${game_id}/${player}`
+    const message = "You cannot draw from the discard pile right now"
+
+    await emit_error_message(io, player, location, message)
   }
 });
 
@@ -227,8 +239,29 @@ router.post('/:id/discard', async (request, response, next) => {
       player,
       await Games.get_hand_by_player(game_id, player)
     );
+  }else{
+    const location = `/games/${game_id}/${player}`
+    const message = "You cannot discard right now"
+
+    await emit_error_message(io, player, location, message)
   }
 });
+
+// Check if allowed to meld, check for valid meld
+router.post("/:id/meld", async (request, response, next) => {
+  const io = request.app.get("io");
+  const game_id = request.params.id
+  const player = request.session.user_id
+  const game = await Games.get_game_by_id(game_id)
+    
+  if (is_valid_access(game, player) == false){
+    return null
+  }
+})
+    
+const is_valid_meld = async() =>{
+
+}
 
 // Returns true if:
 // Game exists
@@ -268,5 +301,17 @@ const emit_hand_update = async (io, game_id, player, hand) => {
     hand,
   });
 };
+
+const emit_error_message = async(io, player, location, message) =>{
+  const message = message;
+  const username =  "!!ERROR!!";
+  const timestamp = new Date().toISOString();
+
+  io.to(location).emit("chat-message-received",{
+    message,
+    username,
+    timestamp,
+  })
+}
 
 module.exports = router;
