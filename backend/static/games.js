@@ -1,6 +1,28 @@
 const express = require("express");
 const router = express.Router();
 const Games = require("../db/games.js")
+
+// Enum describing what is allowed on what part of the turn, see game.turn_progress
+// Draw is start of turn, player can draw from deck or discard
+// Middle is when player can select cards for actions. Allowed to:
+    // Discard: ends turn
+    // Meld
+    // Knock
+// Three special draw phases can happen only at the start of the game, in this order. 
+    // If a draw happens, skip to Middle and play as normal
+    // OppositeDraw is first turn only. Player can draw from discard or end turn, pass to other
+    // DealerDraw is first turn only. Player can draw from discard or end turn, pass to other
+    // OppositeMustDraw is first turn only. Player must draw from deck. 
+const TurnProgress = {
+    OppositeDraw: -3,
+    DealerDraw: -2,
+    OppositeMustDraw: -1,
+    Draw: 0,
+    Middle: 1,
+    Discard: 2,
+}
+
+
 router.post("/:id/start", async (request, response, next) => {
     const io = request.app.get("io");
     const game_id = request.params.id
@@ -80,10 +102,54 @@ router.get("/:id", async (request, response, next) => {
         console.log("Player tried to join game that doesn't exist or was not started")
         response.redirect("/")
     }
-
-
     
 })
+
+
+// Check if allowed to end turn now
+// Change turns
+router.post("/:id/end_turn", async (request, response, next) => {
+    const game_id = request.params.id
+    const player = request.session.user_id
+    const game = await Games.get_game_by_id(game_id)
+
+    if (!is_valid_access(game, player)){
+        return null
+    }
+
+
+})
+
+const swap_turn = async(game) =>{
+    const p1 = game.player1_id
+    const p2 = game.player2_id
+    const current_turn = game.turn
+    var new_turn = p1
+    var progress = game.turn_progress
+    var new_progress = 0
+    if (p1 == current_turn){
+        current_turn = p2
+    }
+
+    if(progress == TurnProgress.OppositeDraw){
+        new_progress = TurnProgress.DealerDraw
+    }else{
+        if (progress == TurnProgress.DealerDraw){
+            new_progress == TurnProgress.OppositeMustDraw
+        }
+    }
+
+    await Games.start_new_turn(game.game_id, new_turn, new_progress)
+}
+
+// Returns true if:
+    // Game exists
+    // Game is not complete
+    // Player is in game, it is the player's turn, and the game is started
+        // These three are the same check, since turn = some player_id if game is started
+const is_valid_access = async(game, player_id) =>{
+    return (game != null && game.completed != false && game.turn == player_id)
+}
 
 
 module.exports = router;

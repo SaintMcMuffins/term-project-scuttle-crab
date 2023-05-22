@@ -122,9 +122,11 @@ const start_game = async (game_id) =>{
         await deal_hands(game_id)
         await discard_from_deck(game_id)
 
+        // Start game with turn = player2 ID, and also set turn progress to -3
+            // See enum in frontend > games
         await db.none(
-            `UPDATE games SET turn=1 WHERE game_id=$1`,
-            [game_id]
+            `UPDATE games SET turn=$1, turn_progress=$2 WHERE game_id=$3`,
+            [p2.player2_id, -3, game_id]
         )
 
     }
@@ -310,8 +312,8 @@ const discard_from_deck = async(game_id) =>{
 
 
     await db.none(
-        `UPDATE games SET deck=$1, discard=$2, discard_index=$3`,
-        [deck, discard, index] 
+        `UPDATE games SET deck=$1, discard=$2, discard_index=$3 WHERE game_id=$4`,
+        [deck, discard, index, game_id] 
     )
 
     game = await get_game_by_id(game_id)
@@ -334,6 +336,13 @@ const is_game_started = async(game_id) =>{
     }
 }
 
+const start_new_turn = async(game_id, new_turn, turn_progress) =>{
+    await db.none(
+        `UPDATE games SET turn=$1, turn_progress=$2 WHERE game_id=$3`,
+        [new_turn, turn_progress, game_id]
+    )
+}
+
 
 module.exports = {
   createGameSQL,
@@ -353,5 +362,6 @@ module.exports = {
   find_open_game,
   shuffle_deck,
   deal_hands,
-  draw_card
+  draw_card,
+  start_new_turn
 };
