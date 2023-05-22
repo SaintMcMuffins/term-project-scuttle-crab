@@ -105,6 +105,17 @@ select_card.forEach((card) => {
   });
 });
 
+const discard_button = document.getElementById('discard-button');
+if (discard_button != null && discard_button.value != null) {
+  discard_button.addEventListener('click', () => {
+    fetch(`/games/${discard_button.value}/discard`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selected_cards }),
+    });
+  });
+}
+
 const meld_button = document.getElementById('meld-button');
 if (meld_button != null && meld_button.value != null) {
   meld_button.addEventListener('click', () => {
