@@ -53,7 +53,8 @@ socket.on('update-hand', ({ hand }) => {
 });
 
 socket.on('update-discard-pile', ({ discard_top }) => {
-  var discardPileElement = document.getElementById(`card${discard_top}`);
+
+  var discardPileElement = document.getElementsByClassName("pile")[0];
   discardPileElement.id = 'card' + discard_top; // update top card id
 });
 
