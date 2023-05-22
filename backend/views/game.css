@@ -22,9 +22,8 @@
   border-radius: 20px;
   
 }
-.p1-item.highlighted {
-  border-radius: 10px;
-  background-color: yellow;
+.p1-item:hover {
+  box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
 }
 
 .game-container {
