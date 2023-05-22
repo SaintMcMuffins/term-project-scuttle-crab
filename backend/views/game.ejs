@@ -17,18 +17,16 @@
     <div class="parent-container">
       <!-- Chat area -->
       <div class="chat-area">
-        <div class="chat-box">
-          <div id="chat-container">
+        <div class="chat-box" id="chat-container">
             <p id="chat">Chat</p>
-            <div id="messages"></div>
-            <label>
+            <div class="message-container" id="messages"></div>
+            <label class="message-box">
               <input
                 id="chat__message"
                 name="chat-message"
                 placeholder="Type a message..."
               />
             </label>
-          </div>
         </div>
       </div>
       
@@ -50,7 +48,7 @@
       
       <!-- Game container -->
       <div class="game-container">
-        <div class="board">
+
           <div class="card-area">
             <!-- Card area content goes here -->
             <div class="pile" id="card<%= discard_top %>"></div>
@@ -74,7 +72,6 @@
             <div class="p2-item" id="card0"></div>
           </div>
         </div>
-      </div>
       </div>
     </div>
     
