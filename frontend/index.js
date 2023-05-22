@@ -52,6 +52,11 @@ socket.on('update-hand', ({ hand }) => {
   }
 });
 
+socket.on('update-discard-pile', ({ top_card }) => {
+  const discardPileElement = document.getElementById(`card${discard_top}`);
+  discardPileElement.id = 'card' + top_card; // update top card id
+});
+
 const start_button = document.getElementById('start-game-button');
 // Send request to start game on start press
 if (start_button != null && start_button.value != null) {
