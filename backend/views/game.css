@@ -77,7 +77,7 @@ body {
 
 .card-area {
     display: grid;
-    grid-template-columns: repeat(10, 113px);
+    grid-template-columns: repeat(11, 113px);
     grid-template-rows: repeat(5, 158px);
     grid-auto-flow: column;
     grid-auto-flow: row;

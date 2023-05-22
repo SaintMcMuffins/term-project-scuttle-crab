@@ -54,8 +54,8 @@
         
         <div class="card-area">
           <!-- Card area content goes here -->
-          <div class="deck"><button id="card53"></button></div>
-          <div class="pile" id="card53"></div>
+          <div class="deck"><button id="card0"></button></div>
+          <div class="pile" id="card<%= discard_top %>"></div>
             <!-- First player's card hand content goes here -->
             <% hand.forEach(function(c) { %>
                 <div class="p1-item" id="card<%= c %>"></div>
@@ -71,7 +71,9 @@
             <div class="p2-item" id="card0"></div>
             <div class="p2-item" id="card0"></div>
             <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card"></div>
+            <div class="p2-item" id="card0"></div>
+            <div class="p2-item" id="card0"></div>
+
         </div>
       </div>
   </div>

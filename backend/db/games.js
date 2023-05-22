@@ -96,6 +96,16 @@ const not_host_of_game_id = async (game_id) =>{
 
 // Checks game is not started
 // Makes random deck, deals 10 cards to both players
+// TODO: Choose first player, defaulting to P1 for now
+// TODO: Take one card from deck to start discard, face up
+
+// First turn then begins
+    // Let P2 choose to take discard card or not, start their turn
+    // If P2 passes without drawing, P1 has choice to take discard
+        // If P1 also passes, game begins as normal with P2 turn
+
+
+
 // Sets game turn above -1, to mark started
 const start_game = async (game_id) =>{
     const status = await db.one(
@@ -110,6 +120,7 @@ const start_game = async (game_id) =>{
     if(status.turn == -1 && p2.player2_id != null){
         await shuffle_deck(game_id)
         await deal_hands(game_id)
+        await discard_from_deck(game_id)
 
         await db.none(
             `UPDATE games SET turn=1 WHERE game_id=$1`,
@@ -281,6 +292,33 @@ const deal_hands = async(game_id) =>{
 
     await draw_card(game_id, game.player1_id, 10)
     await draw_card(game_id, game.player2_id, 10)
+}
+
+const discard_from_deck = async(game_id) =>{
+    var game = await get_game_by_id(game_id)
+    
+    console.log(deck)
+    console.log(discard)
+    console.log(index)
+    var deck = game.deck
+    var discard = game.discard
+    // Increasing before setting. Pile has 53 cards, so index 0 is no card
+    var index = game.discard_index+1 
+
+    discard[index] = deck.pop()
+
+
+
+    await db.none(
+        `UPDATE games SET deck=$1, discard=$2, discard_index=$3`,
+        [deck, discard, index] 
+    )
+
+    game = await get_game_by_id(game_id)
+    console.log("\n\nUPDATE:\n\n")
+    console.log(deck)
+    console.log(discard)
+    console.log(index)
 }
 
 const is_game_started = async(game_id) =>{

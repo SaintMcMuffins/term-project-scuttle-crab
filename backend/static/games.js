@@ -47,7 +47,6 @@ router.get("/:id", async (request, response, next) => {
 
     if (game != null && request.session.user_id != null && game.turn != -1){
         if(game.player1_id == request.session.user_id || (game.player2_id != null && game.player2_id == request.session.user_id)){
-            console.log("Should render")
 
             // Player only needs to know their own hand
             // TODO: Check if opposite player has knocked. Will need to show
@@ -57,6 +56,7 @@ router.get("/:id", async (request, response, next) => {
             }else{
                 player_hand = game.hand2
             }
+            var top_card = game.discard[game.discard_index]
             response.render("game.ejs", {
                 title: "Game",
                 roomname: game.game_id,
@@ -66,6 +66,7 @@ router.get("/:id", async (request, response, next) => {
                 player1: game.player1_id,
                 player2: game.player2_id,
                 hand: player_hand,
+                discard_top: top_card,
                 loggedIn: true
               });
 
