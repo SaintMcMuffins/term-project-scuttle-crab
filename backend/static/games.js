@@ -157,6 +157,9 @@ router.post('/:id/draw_deck', async (request, response, next) => {
   const game = await Games.get_game_by_id(game_id);
 
   if (is_valid_access(game, player) == false) {
+    response.send();
+
+    response.status(403);
     return null;
   }
 
@@ -172,11 +175,17 @@ router.post('/:id/draw_deck', async (request, response, next) => {
       await Games.get_hand_by_player(game_id, player)
     );
     await Games.set_turn_progress(game_id, TurnProgress.Middle);
+    response.send();
+
+    response.status(200);
   }else{
     const location = `/games/${game_id}/${player}`
     const message = "You cannot draw from the stock right now"
 
     await emit_error_message(io, player, location, message)
+    response.send();
+
+    response.status(403);
   }
 });
 
@@ -189,13 +198,17 @@ router.post('/:id/draw_discard', async (request, response, next) => {
   const game = await Games.get_game_by_id(game_id);
 
   if (!is_valid_access(game, player)) {
+    response.send();
+
+    response.status(403);
     return null;
   }
 
   if (
-    game.turn_progress == TurnProgress.Draw ||
+    game.discard_index != 0 &&
+    (game.turn_progress == TurnProgress.Draw ||
     game.turn_progress == TurnProgress.OppositeDraw ||
-    game.turn_progress == TurnProgress.DealerDraw
+    game.turn_progress == TurnProgress.DealerDraw)
   ) {
     var top_card = await Games.draw_from_discard(game_id, player);
 
@@ -207,11 +220,22 @@ router.post('/:id/draw_discard', async (request, response, next) => {
       await Games.get_hand_by_player(game_id, player)
     );
     await Games.set_turn_progress(game_id, TurnProgress.Middle);
+
+    response.send();
+
+    response.status(200);
   }else{
     const location = `/games/${game_id}/${player}`
-    const message = "You cannot draw from the discard pile right now"
+    var message = "You cannot draw from the discard pile right now"
+    if (game.discard_index == 0){
+        message = "You cannot draw from an empty discard pile"
+    }
 
     await emit_error_message(io, player, location, message)
+
+    response.send();
+
+    response.status(403);
   }
 });
 
@@ -223,27 +247,41 @@ router.post('/:id/discard', async (request, response, next) => {
   const game = await Games.get_game_by_id(game_id);
 
   if (is_valid_access(game, player) == false) {
+    response.send();
+
+    response.status(403);
     return null;
   }
 
-  if (game.turn_progress == TurnProgress.OppositeDraw && request.body.selected_cards != null && request.body.selected_cards.length == 1) {
+  if (game.turn_progress == TurnProgress.Middle && request.body.selected_cards != null && request.body.selected_cards.length == 1) {
     var index = request.body.selected_cards[0];
     console.log("Index is ", index)
     if(index < 11){
-        var top_card = await Games.discard_from_hand(game_id, player, index);
-        await emit_discard_update(io, game_id, top_card);
+      var top_card = await Games.discard_from_hand(game_id, player, index);
+      await emit_discard_update(io, game_id, top_card);
     
-        await emit_hand_update(
-          io,
-          game_id,
-          player,
-          await Games.get_hand_by_player(game_id, player)
-        );
+      await emit_hand_update(
+        io,
+        game_id,
+        player,
+        await Games.get_hand_by_player(game_id, player)
+      );
+
+        // HEYY: Set this to end turn somewhere, probably just call swap turn instead
+      await Games.set_turn_progress(game_id, TurnProgress.Draw);
+
+      response.send();
+
+      response.status(200);
+
     }else{
       const location = `/games/${game_id}/${player}`
       const message = "Cannot discard out of bounds"
 
       await emit_error_message(io, player, location, message)
+      response.send();
+
+      response.status(403);
     }
     
   }else if(request.body.selected_cards != null && request.body.selected_cards.length > 1){
@@ -251,11 +289,17 @@ router.post('/:id/discard', async (request, response, next) => {
     const message = "You can only discard one card"
 
     await emit_error_message(io, player, location, message)
+    response.send();
+
+    response.status(403);
   }else{
     const location = `/games/${game_id}/${player}`
     const message = "You cannot discard right now"
 
     await emit_error_message(io, player, location, message)
+    response.send();
+
+    response.status(403);
   }
 });
 

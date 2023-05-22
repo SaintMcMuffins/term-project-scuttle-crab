@@ -136,7 +136,7 @@ if (meld_button != null && meld_button.value != null) {
 const draw_card = document.getElementById('draw-card');
 if (draw_card != null && draw_card.value != null) {
   draw_card.addEventListener('click', () => {
-    fetch(`/games/${draw_card.value}/draw`, {
+    fetch(`/games/${draw_card.value}/draw_deck`, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ draw_pile }),
@@ -145,6 +145,23 @@ if (draw_card != null && draw_card.value != null) {
     console.log('Drew:', draw_pile);
   });
 }
+
+const draw_discard = document.getElementsByClassName("pile");
+// Wasn't reading div value, so using draw card value
+if (draw_discard.length != 0 && draw_card != null & draw_card.value != null) {
+  if(draw_card.value != null && draw_card.value >= 0){
+    draw_discard[0].addEventListener('click', () => {
+        console.log("Click")
+        fetch(`/games/${draw_card.value}/draw_discard`, {
+          method: 'post',
+          headers: { 'Content-Type': 'application/json' },
+          
+        });
+      });
+  }
+  
+}
+
 const knock_button = document.getElementById('knock-button');
 if (knock_button != null && knock_button.value != null) {
   knock_button.addEventListener('click', () => {

@@ -53,6 +53,10 @@
   grid-row: 3 / 5;
 }
 
+.pile:hover {
+    box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+  }
+
 .ui-area {
   grid-area: 3 / 2 / 4 / 3;
   padding: 30px;

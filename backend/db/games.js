@@ -368,13 +368,13 @@ const discard_from_deck = async (game_id) => {
   console.log(index);
 };
 
+// Sets some card in the hand to 0 and adds to top of discard pile, and moves discard index
 const discard_from_hand = async (game_id, player_id, index) => {
   var game = await get_game_by_id(game_id);
 
   console.log(player_id, index);
   var new_index = game.discard_index + 1;
   var hand = await get_hand_by_player(game_id, player_id);
-  console.log(hand);
 
   game.discard[new_index] = hand[index];
 
