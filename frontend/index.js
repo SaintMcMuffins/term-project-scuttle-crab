@@ -126,4 +126,26 @@ if (meld_button != null && meld_button.value != null) {
     });
   });
 }
+const draw_card = document.getElementById('draw-card');
+if (draw_card != null && draw_card.value != null) {
+  draw_card.addEventListener('click', () => {
+    fetch(`/games/${draw_card.value}/meld`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selected_cards }),
+    });
+    console.log('Cards you selected:', selected_cards);
+  });
+}
+const knock_button = document.getElementById('knock-button');
+if (knock_button != null && knock_button.value != null) {
+  knock_button.addEventListener('click', () => {
+    fetch(`/games/${knock_button.value}/meld`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selected_cards }),
+    });
+    console.log('Cards you selected:', selected_cards);
+  });
+}
 // TODO: meld validation from selected cards & emit
