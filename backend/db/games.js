@@ -395,6 +395,34 @@ const discard_from_deck = async(game_id) =>{
     console.log(index)
 }
 
+const discard_from_hand = async(game_id, player_id, index) =>{
+    var game = await get_game_by_id(game_id)
+
+    console.log(player_id, index)
+    var new_index = game.discard_index+1
+    var hand = await get_hand_by_player(game_id, player_id)
+    console.log(hand)
+
+    game.discard[new_index] = hand[index]
+
+    hand[index] = 0
+
+    if (player_id == game.player1_id){
+        await db.none(
+            `UPDATE games SET discard=$1, hand1=$2, discard_index=$3 WHERE game_id=$4`,
+            [game.discard, hand, new_index, game_id]
+        )
+    }else{
+        await db.none(
+            `UPDATE games SET discard=$1, hand2=$2, discard_index=$3 WHERE game_id=$4`,
+            [game.discard, hand, new_index, game_id]
+        )
+    }
+
+    return game.discard[new_index]
+    
+}
+
 const is_game_started = async(game_id) =>{
     try{
         const turn = await db.one(
@@ -428,6 +456,13 @@ const get_hand_by_player = async(game_id, player_id) =>{
     }
 }
 
+const set_turn_progress = async(game_id, progress) =>{
+    await db.none(
+        `UPDATE games SET turn_progress=$1 WHERE game_id=$2`,
+        [progress, game_id]
+    )
+}
+
 
 module.exports = {
   createGameSQL,
@@ -450,5 +485,7 @@ module.exports = {
   deal_hands,
   draw_card,
   draw_from_discard,
+  discard_from_hand,
+  set_turn_progress,
   start_new_turn
 };
