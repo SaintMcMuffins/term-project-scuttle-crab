@@ -1,46 +1,45 @@
 @import 'fonts.css';
 
-header{
-    padding-bottom: 20px;
-  }
-  body {
-    margin: 0;
-    padding: 0;
-  }
-  
-  .header-bar {
-    background-color: #d9d9d9;
-    color: #fff;
-    padding-top: 5px;
-    padding-bottom: 70px;
-    margin: 0;
-  }
-  
-  .header-items {
-    display: inline-block;
-    float: right; /* Optional: To align elements to the center horizontally */
-    padding-top: 15px;
-    padding-right: 10px;
-  }
-  .logo {
-    color: #333;
-    padding-left: 25px;
-    text-decoration: none;
-    font-family: Inter-ExtraBold;
-    font-size: 40px;
-    float: left;
-  }
-  
-  .button {
-    text-decoration: none;
-    width: 150px;
-    height: 20px;
-    padding: 0.5rem 2.5rem;
-    font-weight: 600;
-    color: #ffffff;
-    background: #666666;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    border-radius: 10px;
-    font-family: Inter-Regular;
-  }
-  
+header {
+  padding-bottom: 20px;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.header-bar {
+  background-color: #d9d9d9;
+  color: #fff;
+  padding-top: 5px;
+  padding-bottom: 70px;
+  margin: 0;
+}
+
+.header-items {
+  display: inline-block;
+  float: right; /* Optional: To align elements to the center horizontally */
+  padding-top: 15px;
+  padding-right: 10px;
+}
+.logo {
+  color: #333;
+  padding-left: 25px;
+  text-decoration: none;
+  font-family: Inter-ExtraBold;
+  font-size: 40px;
+  float: left;
+}
+
+.button {
+  text-decoration: none;
+  width: 150px;
+  height: 20px;
+  padding: 0.5rem 2.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #666666;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  font-family: Inter-Regular;
+}

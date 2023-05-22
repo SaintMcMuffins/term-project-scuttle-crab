@@ -7,21 +7,20 @@
   <head>
     <title><%= title %></title>
     <script type="module" src="/scripts/bundle.js" defer></script>
-        <link rel="stylesheet" type="text/css" href="/home.css" />
+    <link rel="stylesheet" type="text/css" href="/home.css" />
     <%- include('header') %>
   </head>
 
   <body>
-<div class="gameblock">
-  <div class="gamebuttons">
-    <a href="/creategame" class="button">NEW GAME</a>
-    <a href="/joingame" class="button">JOIN GAME</a>
-    </div>
-  </div>
-  <div id="chat-container">
-      <p id="chat">Chat</p>
-      <div id="messages">
+    <div class="gameblock">
+      <div class="gamebuttons">
+        <a href="/creategame" class="button">NEW GAME</a>
+        <a href="/joingame" class="button">JOIN GAME</a>
       </div>
+    </div>
+    <div id="chat-container">
+      <p id="chat">Chat</p>
+      <div id="messages"></div>
 
       <label>
         <input
@@ -30,16 +29,16 @@
           placeholder="Type a message..."
         />
       </label>
-  </div>
-<div class="bigRectangle">
-  <div class="innerRectangle">
-    <h1>Join Game</h1>
-    <form id="join-game" action="/joinGame" method="post">
+    </div>
+    <div class="bigRectangle">
+      <div class="innerRectangle">
+        <h1>Join Game</h1>
+        <form id="join-game" action="/joinGame" method="post">
           <label for="RoomName">Room Name:</label>
-         <br> <input type="submit" value="Submit" />
+          <br />
+          <input type="submit" value="Submit" />
         </form>
-</div>
-</div>
-
+      </div>
+    </div>
   </body>
 </html>
