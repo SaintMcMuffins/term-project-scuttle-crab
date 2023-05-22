@@ -1,3 +1,4 @@
+const { response } = require("express");
 const io = require("socket.io-client");
 const socket = io();
 const messageContainer = document.querySelector("#messages");
@@ -71,3 +72,30 @@ if (chat_box != null) {
     });
   });
 }
+// puts clicked cards into an array to be checked if meld possible or not
+const select_card = document.querySelectorAll(".p1-item");
+var selected_cards = [];
+
+select_card.forEach((card) => {
+  card.addEventListener("click", (event) => {
+    const clickedCard = event.target;
+    const cardIndex = Array.from(select_card).indexOf(clickedCard);
+    
+    selected_cards.push(cardIndex);
+
+    console.log( "cards you selected: ", selected_cards );
+    })
+  });
+
+const meld_button = document.getElementById("meld-button");
+  if(meld_button != null && meld_button.value != null) {
+    meld_button.addEventListener('click', () => {
+      fetch(`/games/${game_id}/meld`, {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selected_cards }),
+      });
+    })
+  }
+  // TODO: meld validation from selected cards & emit
+
