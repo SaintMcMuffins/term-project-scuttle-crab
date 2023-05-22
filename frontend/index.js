@@ -93,11 +93,21 @@ select_card.forEach((card) => {
     const clickedCard = event.target;
     const cardIndex = Array.from(select_card).indexOf(clickedCard);
     
-    selected_cards.push(cardIndex);
+    if (selected_cards.includes(cardIndex)) {
+      // Card is already selected, remove highlight
+      clickedCard.classList.remove('highlighted');
+      const selectedIndex = selected_cards.indexOf(cardIndex);
+      selected_cards.splice(selectedIndex, 1);
+    } else {
+      // Card is not selected, add highlight
+      clickedCard.classList.add('highlighted');
+      selected_cards.push(cardIndex);
+    }
 
-    console.log( "cards you selected: ", selected_cards );
-    })
+    console.log("Cards you selected:", selected_cards);
   });
+});
+
 
 const meld_button = document.getElementById("meld-button");
   if(meld_button != null && meld_button.value != null) {
