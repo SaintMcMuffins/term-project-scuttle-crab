@@ -287,6 +287,78 @@ const draw_card = async(game_id, player_id, draw_count) =>{
     
 }
 
+// Pull player id's hand and the discard pile, then move cards
+const draw_from_discard = async(game_id, player_id) =>{
+    console.log("In draw from discard")
+    var player = await host_of_game_id(game_id)
+    var info = null
+    var hand = null // Hand will be separate, so we don't guess between hand1 and hand2
+    if (player.player1_id == player_id){
+        info = (await db.many(
+            `SELECT discard, hand1, discard_index FROM games WHERE game_id=$1`,
+            [game_id]
+        ))[0]
+    }else {
+        console.log("Player is not host")
+        player = await not_host_of_game_id(game_id) 
+        if (player.player2_id != null && player.player2_id == player_id){
+            info = (await db.many(
+                `SELECT discard, hand2, discard_index FROM games WHERE game_id=$1`,
+                [game_id]
+            ))[0]
+        }
+    }
+
+
+    if (info != null){
+        if(info.hand1 != null){
+            hand = info.hand1
+        }else{
+            hand = info.hand2
+        }
+
+        // Grab card, then zero out and decrement index
+        var card = info.discard[info.discard_index]
+        info.discard[info.discard_index] = 0
+        var new_index = info.discard_index - 1
+
+        var did_draw = false
+
+        // Does  not draw if hand is full
+        for(i=0; i < hand.length; i++){
+            if (hand[i] == 0){
+                hand[i] =  card
+                did_draw = true
+                break
+            }
+        }
+
+        if (did_draw == true){
+            if (info.hand1 != null){
+                await db.none(
+                    `UPDATE games SET hand1=$1 WHERE game_id=$2`,
+                    [hand, game_id]
+                )
+
+            }else{
+                await db.none(
+                    `UPDATE games SET hand2=$1 WHERE game_id=$2`,
+                    [hand, game_id]
+                )
+            }
+
+            await db.none(
+                `UPDATE games SET discard=$1, discard_index=$2 WHERE game_id=$3`,
+                [info.discard, new_index, game_id]
+            )
+        }
+
+        return info.discard[info.discard_index]
+    }
+        
+        
+}
+
 // Gives 10 cards from deck to each player
     // Calls draw_card
 const deal_hands = async(game_id) =>{
@@ -343,6 +415,19 @@ const start_new_turn = async(game_id, new_turn, turn_progress) =>{
     )
 }
 
+const get_hand_by_player = async(game_id, player_id) =>{
+    const info = await db.one(
+        `SELECT player1_id, player2_id, hand1, hand2 FROM games WHERE game_id=$1`,
+        [game_id]
+    )
+
+    if(info.player1_id == player_id){
+        return info.hand1
+    }else{
+        return info.hand2
+    }
+}
+
 
 module.exports = {
   createGameSQL,
@@ -356,6 +441,7 @@ module.exports = {
   player2_of_game_id,
   host_of_game_id,
   not_host_of_game_id,
+  get_hand_by_player,
   start_game,
   join_game,
   get_game_by_id,
@@ -363,5 +449,6 @@ module.exports = {
   shuffle_deck,
   deal_hands,
   draw_card,
+  draw_from_discard,
   start_new_turn
 };
