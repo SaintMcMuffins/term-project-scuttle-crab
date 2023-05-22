@@ -52,8 +52,13 @@ socket.on('update-hand', ({ hand }) => {
   }
 });
 
-socket.on('update-discard-pile', ({ discard_top }) => {
+socket.on('update-turn', ({ player, is_passable_turn }) => {
+  var playerElement = document.querySelector('.player-turn-indicator');
+  playerElement.innerHTML = player + "'s turn!";
 
+});
+
+socket.on('update-discard-pile', ({ discard_top }) => {
   var discardPileElement = document.getElementsByClassName("pile")[0];
   discardPileElement.id = 'card' + discard_top; // update top card id
 });
@@ -87,6 +92,18 @@ if (chat_box != null) {
     });
   });
 }
+
+const pass_button = document.getElementById('pass-button');
+if (pass_button != null && pass_button.value != null) {
+  pass_button.addEventListener('click', () => {
+    fetch(`/games/${pass_button.value}/end_turn`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+
+    });
+  });
+}
+
 // puts clicked cards into an array to be checked if meld possible or not
 const select_card = document.querySelectorAll('.p1-item');
 var selected_cards = [];

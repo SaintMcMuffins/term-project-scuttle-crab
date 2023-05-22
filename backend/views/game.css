@@ -57,6 +57,12 @@
     box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
   }
 
+.player-turn-indicator {
+  grid-area: 4 / 6 / 4 / 6;
+  margin: auto;
+  font-family: Inter-Bold;
+  font-size: 15px;
+  }
 .ui-area {
   grid-area: 3 / 2 / 4 / 3;
   padding: 30px;
@@ -90,6 +96,10 @@
 }
 .b4 {
   grid-area: 1 / 4 / 2 / 5;
+}
+.b5 {
+  grid-area: 3 / 7 / 3 / 7;
+  margin: auto;
 }
 
 button {
@@ -166,6 +176,8 @@ button:hover i::after {
   left: 80%;
   animation: move 3s infinite;
 }
+
+
 
 @keyframes move {
   0% {
