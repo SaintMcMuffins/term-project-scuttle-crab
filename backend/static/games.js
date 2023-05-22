@@ -65,8 +65,8 @@ router.get('/:id', async (request, response, next) => {
   const game = await Games.get_game_by_id(game_id);
 
   if (game != null && request.session.user_id != null && game.turn != -1) {
-    const player1_name = await Games.player1_of_game_id(request.params.id);
-    const player2_name = await Games.player2_of_game_id(request.params.id);
+    var player1_name = await Games.player1_of_game_id(request.params.id);
+    var player2_name = await Games.player2_of_game_id(request.params.id);
     if (
       game.player1_id == request.session.user_id ||
       (game.player2_id != null && game.player2_id == request.session.user_id)
@@ -74,6 +74,11 @@ router.get('/:id', async (request, response, next) => {
       // Player only needs to know their own hand
       // TODO: Check if opposite player has knocked. Will need to show
       var player_hand = null;
+
+      var cur_player_name = player2_name
+      if (game.player1_id == game.turn){
+        cur_player_name = player1_name
+      }
       if (request.session.user_id == game.player1_id) {
         player_hand = game.hand1;
       } else {
@@ -83,6 +88,7 @@ router.get('/:id', async (request, response, next) => {
       response.render('game.ejs', {
         title: 'Game',
         roomname: game.game_id,
+        current_player: cur_player_name,
         players: [player1_name.username, player2_name.username],
         turn: game.turn,
         message: 'Gin Rummy: Game',
