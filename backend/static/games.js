@@ -156,7 +156,7 @@ router.post("/:id/draw_deck", async (request, response, next) => {
     const player = request.session.user_id
     const game = await Games.get_game_by_id(game_id)
 
-    if (!is_valid_access(game, player)){
+    if (is_valid_access(game, player) == false){
         return null
     }
 
