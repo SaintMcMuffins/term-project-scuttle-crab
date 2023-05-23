@@ -151,7 +151,7 @@ if (meld_button != null && meld_button.value != null) {
         console.log("Have meld ", melds)
 
         for(var i=0; i < selected_cards.length; i++){
-            select_card[selected_cards[i]].classList.remove('highlighted');
+            select_card[selected_cards[i]].classList.add('melded');
 
         }
 
