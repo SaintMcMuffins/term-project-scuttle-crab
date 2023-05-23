@@ -75,9 +75,9 @@ router.get('/:id', async (request, response, next) => {
       // TODO: Check if opposite player has knocked. Will need to show
       var player_hand = null;
 
-      var cur_player_name = player2_name.username
-      if (game.player1_id == game.turn){
-        cur_player_name = player1_name.username
+      var cur_player_name = player2_name.username;
+      if (game.player1_id == game.turn) {
+        cur_player_name = player1_name.username;
       }
       if (request.session.user_id == game.player1_id) {
         player_hand = game.hand1;
@@ -97,7 +97,7 @@ router.get('/:id', async (request, response, next) => {
         hand: player_hand,
         discard_top: top_card,
         loggedIn: true,
-        can_pass: (game.turn_progress < -1)
+        can_pass: game.turn_progress < -1,
       });
     } else {
       // Player tried to access game, but is not in game
@@ -128,12 +128,16 @@ router.post('/:id/end_turn', async (request, response, next) => {
     return null;
   }
 
-  if (game.turn_progress == TurnProgress.Middle || game.turn_progress == TurnProgress.OppositeDraw || game.turn_progress == TurnProgress.DealerDraw) {
+  if (
+    game.turn_progress == TurnProgress.Middle ||
+    game.turn_progress == TurnProgress.OppositeDraw ||
+    game.turn_progress == TurnProgress.DealerDraw
+  ) {
     await swap_turn(game, io);
     response.send();
 
     response.status(200);
-  }else{
+  } else {
     response.send();
 
     response.status(500); // Couldn't end turn for some reason
@@ -153,18 +157,20 @@ const swap_turn = async (game, io) => {
 
   if (progress == TurnProgress.OppositeDraw) {
     new_progress = TurnProgress.DealerDraw;
-    console.log("Swap to DealerDraw. Can only draw from discard")
+    console.log('Swap to DealerDraw. Can only draw from discard');
   } else {
     if (progress == TurnProgress.DealerDraw) {
-        console.log("Swap to opposite. Can only draw from deck, cannot pass anymore")
+      console.log(
+        'Swap to opposite. Can only draw from deck, cannot pass anymore'
+      );
       new_progress == TurnProgress.OppositeMustDraw;
     }
   }
 
   await Games.start_new_turn(game.game_id, new_turn, new_progress);
 
-  console.log("New turn: ", p1)
-  await emit_new_turn(io, game.game_id, p1 == new_turn, (new_progress < -1));
+  console.log('New turn: ', p1);
+  await emit_new_turn(io, game.game_id, p1 == new_turn, new_progress < -1);
 };
 
 // Check if allowed to draw from destination, draw, emit for updates
@@ -197,11 +203,11 @@ router.post('/:id/draw_deck', async (request, response, next) => {
     response.send();
 
     response.status(200);
-  }else{
-    const location = `/games/${game_id}/${player}`
-    const message = "You cannot draw from the stock right now"
+  } else {
+    const location = `/games/${game_id}/${player}`;
+    const message = 'You cannot draw from the stock right now';
 
-    await emit_error_message(io, player, location, message)
+    await emit_error_message(io, player, location, message);
     response.send();
 
     response.status(403);
@@ -226,8 +232,8 @@ router.post('/:id/draw_discard', async (request, response, next) => {
   if (
     game.discard_index != 0 &&
     (game.turn_progress == TurnProgress.Draw ||
-    game.turn_progress == TurnProgress.OppositeDraw ||
-    game.turn_progress == TurnProgress.DealerDraw)
+      game.turn_progress == TurnProgress.OppositeDraw ||
+      game.turn_progress == TurnProgress.DealerDraw)
   ) {
     var top_card = await Games.draw_from_discard(game_id, player);
 
@@ -243,14 +249,14 @@ router.post('/:id/draw_discard', async (request, response, next) => {
     response.send();
 
     response.status(200);
-  }else{
-    const location = `/games/${game_id}/${player}`
-    var message = "You cannot draw from the discard pile right now"
-    if (game.discard_index == 0){
-        message = "You cannot draw from an empty discard pile"
+  } else {
+    const location = `/games/${game_id}/${player}`;
+    var message = 'You cannot draw from the discard pile right now';
+    if (game.discard_index == 0) {
+      message = 'You cannot draw from an empty discard pile';
     }
 
-    await emit_error_message(io, player, location, message)
+    await emit_error_message(io, player, location, message);
 
     response.send();
 
@@ -272,13 +278,17 @@ router.post('/:id/discard', async (request, response, next) => {
     return null;
   }
 
-  if (game.turn_progress == TurnProgress.Middle && request.body.selected_cards != null && request.body.selected_cards.length == 1) {
+  if (
+    game.turn_progress == TurnProgress.Middle &&
+    request.body.selected_cards != null &&
+    request.body.selected_cards.length == 1
+  ) {
     var index = request.body.selected_cards[0];
-    console.log("Index is ", index)
-    if(index < 11){
+    console.log('Index is ', index);
+    if (index < 11) {
       var top_card = await Games.discard_from_hand(game_id, player, index);
       await emit_discard_update(io, game_id, top_card);
-    
+
       await emit_hand_update(
         io,
         game_id,
@@ -286,38 +296,39 @@ router.post('/:id/discard', async (request, response, next) => {
         await Games.get_hand_by_player(game_id, player)
       );
 
-        // HEYY: Set this to end turn somewhere, probably just call swap turn instead
-     // await Games.set_turn_progress(game_id, TurnProgress.Draw);
-      await swap_turn(game, io)
+      // HEYY: Set this to end turn somewhere, probably just call swap turn instead
+      // await Games.set_turn_progress(game_id, TurnProgress.Draw);
+      await swap_turn(game, io);
       response.send();
 
       response.status(200);
       return null;
+    } else {
+      const location = `/games/${game_id}/${player}`;
+      const message = 'Cannot discard out of bounds';
 
-    }else{
-      const location = `/games/${game_id}/${player}`
-      const message = "Cannot discard out of bounds"
-
-      await emit_error_message(io, player, location, message)
+      await emit_error_message(io, player, location, message);
       response.send();
 
       response.status(403);
       return null;
     }
-    
-  }else if(request.body.selected_cards != null && request.body.selected_cards.length > 1){
-    const location = `/games/${game_id}/${player}`
-    const message = "You can only discard one card"
+  } else if (
+    request.body.selected_cards != null &&
+    request.body.selected_cards.length > 1
+  ) {
+    const location = `/games/${game_id}/${player}`;
+    const message = 'You can only discard one card';
 
-    await emit_error_message(io, player, location, message)
+    await emit_error_message(io, player, location, message);
     response.send();
 
     response.status(403);
-  }else{
-    const location = `/games/${game_id}/${player}`
-    const message = "You cannot discard right now"
+  } else {
+    const location = `/games/${game_id}/${player}`;
+    const message = 'You cannot discard right now';
 
-    await emit_error_message(io, player, location, message)
+    await emit_error_message(io, player, location, message);
     response.send();
 
     response.status(403);
@@ -325,50 +336,51 @@ router.post('/:id/discard', async (request, response, next) => {
 });
 
 // Check if allowed to meld, check for valid meld
-router.post("/:id/meld", async (request, response, next) => {
-  const io = request.app.get("io");
-  const game_id = request.params.id
-  const player = request.session.user_id
+router.post('/:id/meld', async (request, response, next) => {
+  const io = request.app.get('io');
+  const game_id = request.params.id;
+  const player = request.session.user_id;
   const meld = request.body.selected_cards;
   const hand = await Games.get_hand_by_player(game_id, player);
-  if(is_valid_meld(hand, meld)){
-    console.log("Meld Succeeded")
-  }
-  else{
-    console.log("Meld Failed")
+  if (is_valid_meld(hand, meld)) {
+    const location = `/games/${game_id}/${player}`;
+    const message = 'Melding Was Successful';
+    await emit_meld_update(io, location, message)
+  } else {
+    const location = `/games/${game_id}/${player}`;
+    const message = 'Meld Failed';
+    await emit_meld_update(io, location, message)
   }
 
-  if (!is_valid_access(game_id, player)){
-    return null
+  if (!is_valid_access(game_id, player)) {
+    return null;
   }
-})
-    
-const is_valid_meld = (hand, meld) =>{
-    const meldID = cardID_to_hand(hand, meld)
-    if(!is_Enough_Meld(meldID)){
-      return false;
-    }
-    if(!is_Ascending_Num(meldID) && !is_Same_Suite(meldID)){
-      return false;
-    }
-    return true;
-}
+});
+
+const is_valid_meld = (hand, meld) => {
+  const meldID = cardID_to_hand(hand, meld);
+  if (!is_Enough_Meld(meldID)) {
+    return false;
+  }
+  if (!is_Ascending_Num(meldID) && !is_Same_Suite(meldID)) {
+    return false;
+  }
+  return true;
+};
 const cardID_to_hand = (hand, meld) => {
-  const meldArray = meld.map(index => hand[index]);
+  const meldArray = meld.map((index) => hand[index]);
   return meldArray;
 };
 const is_Enough_Meld = (meld) => {
-  if(meld.length == 3 || meld.length == 4){ 
+  if (meld.length >= 3 || meld.length <= 10) {
     return true;
-  }
-  else{
+  } else {
     return false;
   }
 };
 const is_Ascending_Num = (meld) => {
   for (let i = 1; i < meld.length; i++) {
     if (meld[i] % 13 == 1 || meld[i] !== meld[i - 1] + 1) {
-
       return false;
     }
   }
@@ -406,7 +418,7 @@ const emit_new_turn = async (io, game_id, is_p1_turn, is_passable_turn) => {
 
   io.to(`/games/${game_id}`).emit('update-turn', {
     player,
-    is_passable_turn
+    is_passable_turn,
   });
 };
 
@@ -424,17 +436,28 @@ const emit_hand_update = async (io, game_id, player, hand) => {
     hand,
   });
 };
-
-const emit_error_message = async(io, player, location, message) =>{
-    console.log("Emitting ", message)
-  const username =  "!!ERROR!!";
+const emit_meld_update = async (io, location, message) => {
+  console.log('Emitting ', message);
+  const username = 'SYSTEM';
   const timestamp = new Date().toISOString();
 
-  io.to(location).emit("chat-message-received",{
+  io.to(location).emit('chat-message-received', {
     message,
     username,
     timestamp,
-  })
-}
+  });
+};
+
+const emit_error_message = async (io, player, location, message) => {
+  console.log('Emitting ', message);
+  const username = '!!ERROR!!';
+  const timestamp = new Date().toISOString();
+
+  io.to(location).emit('chat-message-received', {
+    message,
+    username,
+    timestamp,
+  });
+};
 
 module.exports = router;
