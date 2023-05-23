@@ -362,12 +362,48 @@ router.post('/:id/knock', async (request, response, next) => {
   var melds = request.body.melds;
   const game = await Games.get_game_by_id(game_id);
 
+//console.log("Melds are currently", game.melds1, " and ", game.melds2)
+//console.log("Melds are currently", game.melds2[0], game.melds2[0][1])
 
   if (is_valid_access(game, player) == false) {
+    await emit_unselect_melds(io, game_id, player)
+
     response.send();
 
     response.status(403);
     return null;
+  }
+
+  if(game.turn_progress != TurnProgress.Middle){
+    const location = `/games/${game_id}/${player}`;
+    const message = 'Could not knock at this time';
+    await emit_meld_update(io, location, message)
+    await emit_unselect_melds(io, game_id, player)
+
+    response.send();
+
+    response.status(403);
+    return null
+  }
+
+  var total_melded_cards = 0
+
+  for(i=0; i < melds.length; i++){
+    for(j=0; j < melds[i].length; j++){
+        total_melded_cards = total_melded_cards + 1
+    }
+  }
+
+  if (total_melded_cards > 10){
+    const location = `/games/${game_id}/${player}`;
+    const message = 'Cannot knock with more than 10 cards';
+    await emit_meld_update(io, location, message)
+    await emit_unselect_melds(io, game_id, player)
+
+    response.send();
+
+    response.status(403);
+    return null
   }
 
   const hand = await Games.get_hand_by_player(game_id, player);
@@ -385,9 +421,25 @@ router.post('/:id/knock', async (request, response, next) => {
         }
     }
     
+    if(meld_success == true){
+        var deadwood = remaining_deadwood(hand, melds)
+        const location = `/games/${game_id}/${player}`;
+        const message = `Deadwood was not less than 10 (${deadwood})`;
+        await emit_meld_update(io, location, message)
+        await emit_unselect_melds(io, game_id, player)
+
+        response.send();
+
+        response.status(200);
+        return null
+    }
   }
 
   if (meld_success == true){
+    await Games.save_meld(game, player, JSON.stringify(melds))
+   // var game2 = await Games.get_game_by_id(game_id);
+    //console.log("Melds are currently", game2.melds1, " and ", game2.melds2)
+
     const location = `/games/${game_id}/${player}`;
     const message = 'Melding Was Successful';
     await emit_meld_update(io, location, message)
@@ -451,6 +503,34 @@ const has_dupes = (melds) =>{
     }
 
     return false
+}
+
+// Check which cards are not in melds
+// Add value of those cards and return it
+const remaining_deadwood = (hand, melds_index) =>{
+    var melds = []
+    for(i=0; i < melds_index.length; i++){
+        melds.push(cardID_to_hand(hand, melds_index[i]))
+    }
+    var hand_copy = hand
+    var deadwood = 0
+
+    for(i=0; i < melds.length; i++){
+        for(j=0; j < melds[i].length; j++){
+            for(k=0; k < hand_copy.length; k++){
+                if (hand_copy[k] == melds[i][j]){
+                    hand_copy[k] = 0
+                }
+            }
+
+        }
+    }
+
+    for(i=0; i < hand_copy.length; i++){
+        deadwood = deadwood + Math.min((hand_copy[i] % 13), 10)
+    }
+
+    return deadwood
 }
 
 const cardID_to_hand = (hand, meld) => {

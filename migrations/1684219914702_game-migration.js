@@ -51,6 +51,16 @@ exports.up = (pgm) => {
       notNull: true,
       default: '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}',
     },
+    melds1: {
+        type: 'json',
+        notNull: true,
+        default: '{}'
+    },
+    melds2: {
+        type: 'json',
+        notNull: true,
+        default: '{}'
+    },
     deck: {
       type: 'integer[52]',
       notNull: true,

@@ -435,6 +435,20 @@ const set_turn_progress = async (game_id, progress) => {
   ]);
 };
 
+const save_meld = async(game, player_id, melds) =>{
+  if (player_id == game.player1_id){
+    await db.none(
+        `UPDATE games SET melds1=$1 WHERE game_id=$2`,
+        [melds, game.game_id]
+    )
+  }else{
+    await db.none(
+        `UPDATE games SET melds2=$1 WHERE game_id=$2`,
+        [melds, game.game_id]
+    )
+  }
+}
+
 module.exports = {
   createGameSQL,
   insertFirstUserSQL,
@@ -459,4 +473,5 @@ module.exports = {
   discard_from_hand,
   set_turn_progress,
   start_new_turn,
+  save_meld
 };
