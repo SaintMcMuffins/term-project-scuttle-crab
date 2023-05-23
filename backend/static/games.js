@@ -129,7 +129,6 @@ router.post('/:id/end_turn', async (request, response, next) => {
   }
 
   if (
-    game.turn_progress == TurnProgress.Middle ||
     game.turn_progress == TurnProgress.OppositeDraw ||
     game.turn_progress == TurnProgress.DealerDraw
   ) {
@@ -140,7 +139,7 @@ router.post('/:id/end_turn', async (request, response, next) => {
   } else {
     response.send();
 
-    response.status(500); // Couldn't end turn for some reason
+    response.status(403);
   }
 });
 
@@ -152,24 +151,19 @@ const swap_turn = async (game, io) => {
   var progress = game.turn_progress;
   var new_progress = 0;
   if (p1 == current_turn) {
-    current_turn = p2;
+    new_turn = p2;
   }
 
   if (progress == TurnProgress.OppositeDraw) {
     new_progress = TurnProgress.DealerDraw;
-    console.log('Swap to DealerDraw. Can only draw from discard');
   } else {
     if (progress == TurnProgress.DealerDraw) {
-      console.log(
-        'Swap to opposite. Can only draw from deck, cannot pass anymore'
-      );
       new_progress == TurnProgress.OppositeMustDraw;
     }
   }
 
   await Games.start_new_turn(game.game_id, new_turn, new_progress);
 
-  console.log('New turn: ', p1);
   await emit_new_turn(io, game.game_id, p1 == new_turn, new_progress < -1);
 };
 
@@ -439,7 +433,7 @@ const emit_new_turn = async (io, game_id, is_p1_turn, is_passable_turn) => {
   if (is_p1_turn == true) {
     player = (await Games.player1_of_game_id(game_id)).username;
   } else {
-    player = (await Games.player1_of_game_id(game_id)).username;
+    player = (await Games.player2_of_game_id(game_id)).username;
   }
 
   io.to(`/games/${game_id}`).emit('update-turn', {
