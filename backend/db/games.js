@@ -330,7 +330,7 @@ const draw_from_discard = async (game_id, player_id) => {
       );
     }
 
-    return info.discard[info.discard_index];
+    return info.discard[new_index];
   }
 };
 
@@ -449,6 +449,25 @@ const save_meld = async(game, player_id, melds) =>{
   }
 }
 
+const discard_facedown = async(game, player_id, index) =>{
+    if(player_id == game.player1_id){
+        var hand = game.hand1
+        hand[index] = 0
+        await db.none(
+            `UPDATE games SET discard_index=$1, hand1=$2 WHERE game_id=$3`,
+            [0, hand, game.game_id]
+        )
+    }else{
+        var hand = game.hand2
+        hand[index] = 0
+        await db.none(
+            `UPDATE games SET discard_index=$1, hand2=$2 WHERE game_id=$3`,
+            [0, hand, game.game_id]
+        )
+    }
+    
+}
+
 module.exports = {
   createGameSQL,
   insertFirstUserSQL,
@@ -473,5 +492,6 @@ module.exports = {
   discard_from_hand,
   set_turn_progress,
   start_new_turn,
-  save_meld
+  save_meld,
+  discard_facedown
 };
