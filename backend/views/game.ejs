@@ -55,7 +55,7 @@
             <% if (can_pass) { %> 
             <button style="--clr:#666666" class="b5" id="pass-button" value=<%= roomname %>><span>Pass</span><i></i></button>
             <% } %>
-            <div class="player-turn-indicator" value=<%= current_player %>><%= current_player %></div>
+            <div class="player-turn-indicator" value=<%= current_player %>><%= current_player %>'s turn</div>
             <!-- First player's card hand content goes here -->
             <% hand.forEach(function(c) { %>
               <div class="p1-item" id="card<%= c %>"></div>

@@ -5,20 +5,21 @@ const Games = require('../db/games.js');
 // Enum describing what is allowed on what part of the turn, see game.turn_progress
 // Draw is start of turn, player can draw from deck or discard
 // Middle is when player can select cards for actions. Allowed to:
-// Discard: ends turn
-// Meld
-// Knock
+    // Discard: ends turn
+    // Knock
 // Three special draw phases can happen only at the start of the game, in this order.
 // If a draw happens, skip to Middle and play as normal
 // OppositeDraw is first turn only. Player can draw from discard or end turn, pass to other
 // DealerDraw is first turn only. Player can draw from discard or end turn, pass to other
 // OppositeMustDraw is first turn only. Player must draw from deck.
+// StartKnock starts when knock validates. Player can discard 
 const TurnProgress = {
   OppositeDraw: -3,
   DealerDraw: -2,
   OppositeMustDraw: -1,
   Draw: 0,
   Middle: 1,
+  StartKnock: 2,
 };
 
 router.post('/:id/start', async (request, response, next) => {
@@ -270,20 +271,29 @@ router.post('/:id/discard', async (request, response, next) => {
   const game_id = request.params.id;
   const player = request.session.user_id;
   const game = await Games.get_game_by_id(game_id);
-
+  var index = -1 
+  if(request.body.selected_cards != null && request.body.selected_cards.length == 1){
+    console.log("Body was not null, and body is length 1")
+    index = request.body.selected_cards[0];
+  }
   if (is_valid_access(game, player) == false) {
     response.send();
 
     response.status(403);
     return null;
   }
+  
+  // Special processing if Knock's discard
+  if (game.turn_progress == TurnProgress.StartKnock && index != -1 && index < 11){
+    await discard_knock(io, response, game_id, player, game, index)
+    return null
+  }
 
   if (
     game.turn_progress == TurnProgress.Middle &&
     request.body.selected_cards != null &&
-    request.body.selected_cards.length == 1
+    index != -1
   ) {
-    var index = request.body.selected_cards[0];
     console.log('Index is ', index);
     if (index < 11) {
       var top_card = await Games.discard_from_hand(game_id, player, index);
@@ -296,8 +306,7 @@ router.post('/:id/discard', async (request, response, next) => {
         await Games.get_hand_by_player(game_id, player)
       );
 
-      // HEYY: Set this to end turn somewhere, probably just call swap turn instead
-      // await Games.set_turn_progress(game_id, TurnProgress.Draw);
+
       await swap_turn(game, io);
       response.send();
 
@@ -334,6 +343,54 @@ router.post('/:id/discard', async (request, response, next) => {
     response.status(403);
   }
 });
+
+// Handle discard for knock phase
+// Makes sure index chosen is not a melded card
+const discard_knock = async (io, response, game_id, player_id, game, index) =>{
+    var melds = null
+    var hand = null
+    var can_discard = true
+    if(player_id == game.player1_id){
+        melds = game.melds1
+        hand = game.hand1
+    }else{
+        melds = game.melds2
+        hand = game.hand2
+    }
+
+
+    for(i=0; i < melds.length; i++){
+        for(j=0; j < melds[i].length; j++){
+            var meld_values = cardID_to_hand(hand, melds[i])
+            if (hand[index] == meld_values[j]){ // Card is in meld, can't discard
+                can_discard = false
+                break
+            }
+        }
+    }
+
+    if(can_discard == true){
+        await Games.discard_facedown(game, player_id, index)
+        var game2 = await Games.get_game_by_id(game_id)
+        await emit_discard_update(io, game_id, 0)
+        var hand = game2.hand1
+        if(player_id == game.player2_id){
+            hand = game2.hand2
+        }
+        await emit_hand_update(io, game_id, player_id, hand)
+
+        response.send()
+        response.status(200)
+        // Set turn and turn progress
+
+    }else{
+        emit_error_message(io, player_id, `/games/${game_id}/${player_id}`, "Cannot discard card from meld")
+        response.send()
+        response.status(403)
+    }
+
+
+}
 
 // Emits to player what meld they just made
     // Melds are client-side until send with knock, so they can refresh
@@ -423,26 +480,31 @@ router.post('/:id/knock', async (request, response, next) => {
     
     if(meld_success == true){
         var deadwood = remaining_deadwood(hand, melds)
-        const location = `/games/${game_id}/${player}`;
-        const message = `Deadwood was not less than 10 (${deadwood})`;
-        await emit_meld_update(io, location, message)
-        await emit_unselect_melds(io, game_id, player)
-
-        response.send();
-
-        response.status(200);
-        return null
+        if(deadwood > 50 ){
+            const location = `/games/${game_id}/${player}`;
+            const message = `Deadwood was not less than 10 (${deadwood})`;
+            await emit_meld_update(io, location, message)
+            await emit_unselect_melds(io, game_id, player)
+    
+            response.send();
+    
+            response.status(200);
+            return null
+        }
+        
     }
   }
 
+  // Meld really succeeded, go into knock step
   if (meld_success == true){
     await Games.save_meld(game, player, JSON.stringify(melds))
    // var game2 = await Games.get_game_by_id(game_id);
     //console.log("Melds are currently", game2.melds1, " and ", game2.melds2)
 
-    const location = `/games/${game_id}/${player}`;
-    const message = 'Melding Was Successful';
+    const location = `/games/${game_id}`;
+    const message = `Player ${request.session.username} knocked!`;
     await emit_meld_update(io, location, message)
+    await Games.set_turn_progress(game_id, TurnProgress.StartKnock)
     }else{
     const location = `/games/${game_id}/${player}`;
     const message = 'Melds were not valid';
