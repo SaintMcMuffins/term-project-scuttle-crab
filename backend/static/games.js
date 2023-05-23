@@ -347,7 +347,7 @@ router.post('/:id/meld', async (request, response, next) => {
     const message = "Current melds hand indecies: " + melds
     const location = `/games/${game_id}/${player}`;
 
-    await emit_made_meld(io, location, message)
+    await emit_notice(io, location, message)
 
     response.send()
     response.status(200)
@@ -465,7 +465,7 @@ const emit_hand_update = async (io, game_id, player, hand) => {
 const emit_meld_update = async (io, location, message) => {
   console.log('Emitting ', message);
   const username = 'SYSTEM';
-  const timestamp = new Date().toISOString();
+  const timestamp = "";
 
   io.to(location).emit('chat-message-received', {
     message,
@@ -477,7 +477,7 @@ const emit_meld_update = async (io, location, message) => {
 const emit_error_message = async (io, player, location, message) => {
   console.log('Emitting ', message);
   const username = '!!ERROR!!';
-  const timestamp = new Date().toISOString();
+  const timestamp = "";
 
   io.to(location).emit('chat-message-received', {
     message,
@@ -486,10 +486,10 @@ const emit_error_message = async (io, player, location, message) => {
   });
 };
 
-const emit_made_meld = async (io, location, message) => {
+const emit_notice = async (io, location, message) => {
     console.log('Emitting ', message);
     const username = 'NOTICE: ';
-    const timestamp = new Date().toISOString();
+    const timestamp = ""
   
     io.to(location).emit('chat-message-received', {
       message,
