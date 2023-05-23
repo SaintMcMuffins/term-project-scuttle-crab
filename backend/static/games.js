@@ -405,17 +405,36 @@ const is_valid_meld = (hand, meld) => {
   if (!is_Enough_Meld(meldID)) {
     return false;
   }
-  if (!is_Ascending_Num(meldID) && !is_Descending_num(meldID) && !is_Same_Suite(meldID)) {
+
+  if(has_zeroes(meldID)){
+    return false
+  }
+
+  if (!is_Ascending_Num(meldID) && !is_Descending_num(meldID) && !is_Same_Card_Different_Suite(meldID)) {
     return false;
   }
+
+ 
   return true;
 };
+
+const has_zeroes = (meld) =>{
+    for(var i=0; i < meld.length; i++){
+        console.log("Check ", meld[i])
+        if (meld[i] == 0){
+            console.log("Meld had blank")
+            return true
+        }
+    }
+    
+    return false
+}
 const cardID_to_hand = (hand, meld) => {
   const meldArray = meld.map((index) => hand[index]);
   return meldArray;
 };
 const is_Enough_Meld = (meld) => {
-  if (meld.length >= 3 || meld.length <= 10) {
+  if (meld.length >= 3 && meld.length <= 10) {
     return true;
   } else {
     console.log("Meld too small")
@@ -433,30 +452,47 @@ const is_Ascending_Num = (meld) => {
       return false;
     }
   }
+
+  console.log("Meld ascending")
   return true;
 };
 
 const is_Descending_num = (meld) =>{
-    for (let i = meld.length; i < 0; i++) {
+    for (let i = 1; i < meld.length; i++) {
         if (meld[i] % 13 == 0 || meld[i] !== meld[i - 1] - 1) {
             console.log("Meld not descending")
           return false;
         }
       }
+
+      console.log("Meld descending")
       return true;
 }
 const is_Same_Suite = (meld) => {
-  for (let i = 1; i < meld.length; i++) {
-    meld[i] % 13 != meld[i-1] % 13
-  }
   for (let i = 1; i < meld.length; i++) {
     if (meld[i] !== meld[0]) {
         console.log("Not same suite?")
       return false; // Found a different number, not all numbers are the same
     }
   }
+
+  console.log("Same suite")
   return true;
 };
+
+const is_Same_Card_Different_Suite = (meld) =>{
+    for (let i = 1; i < meld.length; i++) {
+        console.log(meld[i], meld[i-1])
+      if(meld[i] % 13 != meld[i-1] % 13){
+        console.log("Not same card")
+
+        return false
+      }
+    }
+
+    console.log("Same card different suite")
+    return true
+}
 // Returns true if:
 // Game exists
 // Game is not complete

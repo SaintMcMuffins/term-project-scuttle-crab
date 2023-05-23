@@ -225,5 +225,7 @@ socket.on('unselect-melds', () => {
     }
   }
 
+  melds = []
+
 });
 // TODO: meld validation from selected cards & emit
