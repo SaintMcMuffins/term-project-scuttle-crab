@@ -375,22 +375,28 @@ router.post('/:id/knock', async (request, response, next) => {
 
   console.log("Checking knock")
   // Check all melds for validity
-  for(var i=0; i < melds.length; i++){
-    meld_success = is_valid_meld(hand, melds[i])
-    if(meld_success == false){
-        break
+  if(has_dupes(melds) == true){
+    meld_success = false;
+  }else{
+    for(var i=0; i < melds.length; i++){
+        meld_success = is_valid_meld(hand, melds[i])
+        if(meld_success == false){
+            break
+        }
     }
+    
   }
 
   if (meld_success == true){
     const location = `/games/${game_id}/${player}`;
     const message = 'Melding Was Successful';
     await emit_meld_update(io, location, message)
-  }else{
+    }else{
     const location = `/games/${game_id}/${player}`;
     const message = 'Melds were not valid';
     await emit_meld_update(io, location, message)
-  }
+    }
+  
 
   await emit_unselect_melds(io, game_id, player)
 
@@ -429,6 +435,24 @@ const has_zeroes = (meld) =>{
     
     return false
 }
+
+const has_dupes = (melds) =>{
+    var nums = []
+    for(i=0; i < melds.length; i++){
+        for(j=0; j < melds[i].length; j++){
+            for(k=0; k < nums.length; k++){
+                if (nums[k] == melds[i][j]){
+                    return true
+                }
+            }
+            nums.push(melds[i][j])
+
+        }
+    }
+
+    return false
+}
+
 const cardID_to_hand = (hand, meld) => {
   const meldArray = meld.map((index) => hand[index]);
   return meldArray;
