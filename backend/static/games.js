@@ -359,7 +359,7 @@ router.post('/:id/knock', async (request, response, next) => {
   const io = request.app.get('io');
   const game_id = request.params.id;
   const player = request.session.user_id;
-  const melds = request.body.melds;
+  var melds = request.body.melds;
   const game = await Games.get_game_by_id(game_id);
 
 
@@ -369,7 +369,6 @@ router.post('/:id/knock', async (request, response, next) => {
     response.status(403);
     return null;
   }
-
 
   const hand = await Games.get_hand_by_player(game_id, player);
   var meld_success = (melds.length > 0)
@@ -393,6 +392,11 @@ router.post('/:id/knock', async (request, response, next) => {
     await emit_meld_update(io, location, message)
   }
 
+  await emit_unselect_melds(io, game_id, player)
+
+  response.send();
+
+  response.status(200);
   
 });
 
@@ -401,7 +405,7 @@ const is_valid_meld = (hand, meld) => {
   if (!is_Enough_Meld(meldID)) {
     return false;
   }
-  if (!is_Ascending_Num(meldID) && !is_Same_Suite(meldID)) {
+  if (!is_Ascending_Num(meldID) && !is_Descending_num(meldID) && !is_Same_Suite(meldID)) {
     return false;
   }
   return true;
@@ -414,23 +418,40 @@ const is_Enough_Meld = (meld) => {
   if (meld.length >= 3 || meld.length <= 10) {
     return true;
   } else {
+    console.log("Meld too small")
     return false;
   }
 };
+// Ascending if value at i is value at i-1 +1
+    // Previous value+1 = value, and previous value is not % 13 = 0
+        // % 13 = 0 is a king, and nothing comes after 
+    // Must be same suit, so also fail if some i > 0 comes to be ace
 const is_Ascending_Num = (meld) => {
   for (let i = 1; i < meld.length; i++) {
     if (meld[i] % 13 == 1 || meld[i] !== meld[i - 1] + 1) {
+        console.log("Meld not ascending")
       return false;
     }
   }
   return true;
 };
+
+const is_Descending_num = (meld) =>{
+    for (let i = meld.length; i < 0; i++) {
+        if (meld[i] % 13 == 0 || meld[i] !== meld[i - 1] - 1) {
+            console.log("Meld not descending")
+          return false;
+        }
+      }
+      return true;
+}
 const is_Same_Suite = (meld) => {
-  for (let i = 0; i < meld.length; i++) {
-    meld[i] = meld[i] % 13;
+  for (let i = 1; i < meld.length; i++) {
+    meld[i] % 13 != meld[i-1] % 13
   }
   for (let i = 1; i < meld.length; i++) {
     if (meld[i] !== meld[0]) {
+        console.log("Not same suite?")
       return false; // Found a different number, not all numbers are the same
     }
   }
@@ -486,6 +507,11 @@ const emit_meld_update = async (io, location, message) => {
     timestamp,
   });
 };
+
+const emit_unselect_melds = async (io, game_id, player) => {
+    console.log("Emit unselect melds")
+    io.to(`/games/${game_id}/${player}`).emit('unselect-melds')
+}
 
 const emit_error_message = async (io, player, location, message) => {
   console.log('Emitting ', message);

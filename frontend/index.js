@@ -152,6 +152,7 @@ if (meld_button != null && meld_button.value != null) {
 
         for(var i=0; i < selected_cards.length; i++){
             select_card[selected_cards[i]].classList.add('melded');
+            select_card[selected_cards[i]].classList.remove('highlighted');
 
         }
 
@@ -216,4 +217,13 @@ if (knock_button != null && knock_button.value != null) {
     console.log('Cards you are melding:', melds);
   });
 }
+
+socket.on('unselect-melds', () => {
+  for(var i=0; i < melds.length; i++){
+    for(var j=0; j < melds[i].length; j++){
+      select_card[melds[i][j]].classList.remove("melded")
+    }
+  }
+
+});
 // TODO: meld validation from selected cards & emit
