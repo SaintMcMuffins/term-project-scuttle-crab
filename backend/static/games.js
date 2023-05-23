@@ -75,9 +75,9 @@ router.get('/:id', async (request, response, next) => {
       // TODO: Check if opposite player has knocked. Will need to show
       var player_hand = null;
 
-      var cur_player_name = player2_name
+      var cur_player_name = player2_name.username
       if (game.player1_id == game.turn){
-        cur_player_name = player1_name
+        cur_player_name = player1_name.username
       }
       if (request.session.user_id == game.player1_id) {
         player_hand = game.hand1;
@@ -292,6 +292,7 @@ router.post('/:id/discard', async (request, response, next) => {
       response.send();
 
       response.status(200);
+      return null;
 
     }else{
       const location = `/games/${game_id}/${player}`
@@ -301,6 +302,7 @@ router.post('/:id/discard', async (request, response, next) => {
       response.send();
 
       response.status(403);
+      return null;
     }
     
   }else if(request.body.selected_cards != null && request.body.selected_cards.length > 1){
@@ -327,17 +329,62 @@ router.post("/:id/meld", async (request, response, next) => {
   const io = request.app.get("io");
   const game_id = request.params.id
   const player = request.session.user_id
-  const game = await Games.get_game_by_id(game_id)
-    
-  if (is_valid_access(game, player) == false){
+  const meld = request.body.selected_cards;
+  const hand = await Games.get_hand_by_player(game_id, player);
+  if(is_valid_meld(hand, meld)){
+    console.log("Meld Succeeded")
+  }
+  else{
+    console.log("Meld Failed")
+  }
+
+  if (!is_valid_access(game_id, player)){
     return null
   }
 })
     
-const is_valid_meld = async() =>{
-
+const is_valid_meld = (hand, meld) =>{
+    const meldID = cardID_to_hand(hand, meld)
+    if(!is_Enough_Meld(meldID)){
+      return false;
+    }
+    if(!is_Ascending_Num(meldID) && !is_Same_Suite(meldID)){
+      return false;
+    }
+    return true;
 }
+const cardID_to_hand = (hand, meld) => {
+  const meldArray = meld.map(index => hand[index]);
+  return meldArray;
+};
+const is_Enough_Meld = (meld) => {
+  if(meld.length == 3 || meld.length == 4){ 
+    return true;
+  }
+  else{
+    return false;
+  }
+};
+const is_Ascending_Num = (meld) => {
+  for (let i = 1; i < meld.length; i++) {
+    if (meld[i] % 13 == 1 || meld[i] !== meld[i - 1] + 1) {
 
+      return false;
+    }
+  }
+  return true;
+};
+const is_Same_Suite = (meld) => {
+  for (let i = 0; i < meld.length; i++) {
+    meld[i] = meld[i] % 13;
+  }
+  for (let i = 1; i < meld.length; i++) {
+    if (meld[i] !== meld[0]) {
+      return false; // Found a different number, not all numbers are the same
+    }
+  }
+  return true;
+};
 // Returns true if:
 // Game exists
 // Game is not complete
