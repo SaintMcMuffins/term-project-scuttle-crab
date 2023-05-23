@@ -137,6 +137,12 @@ router.post('/:id/end_turn', async (request, response, next) => {
 
     response.status(200);
   } else {
+
+    const location = `/games/${game_id}/${player}`;
+    const message = 'You cannot end the turn right now';
+
+    await emit_error_message(io, player, location, message);
+
     response.send();
 
     response.status(403);
@@ -353,9 +359,11 @@ router.post('/:id/knock', async (request, response, next) => {
   const io = request.app.get('io');
   const game_id = request.params.id;
   const player = request.session.user_id;
-  const melds = request.body.selected_cards;
+  const melds = request.body.melds;
+  const game = await Games.get_game_by_id(game_id);
 
-  if (!is_valid_access(game_id, player)) {
+
+  if (is_valid_access(game, player) == false) {
     response.send();
 
     response.status(403);
@@ -364,13 +372,24 @@ router.post('/:id/knock', async (request, response, next) => {
 
 
   const hand = await Games.get_hand_by_player(game_id, player);
-  if (is_valid_meld(hand, meld)) {
+  var meld_success = (melds.length > 0)
+
+  console.log("Checking knock")
+  // Check all melds for validity
+  for(var i=0; i < melds.length; i++){
+    meld_success = is_valid_meld(hand, melds[i])
+    if(meld_success == false){
+        break
+    }
+  }
+
+  if (meld_success == true){
     const location = `/games/${game_id}/${player}`;
     const message = 'Melding Was Successful';
     await emit_meld_update(io, location, message)
-  } else {
+  }else{
     const location = `/games/${game_id}/${player}`;
-    const message = 'Meld Failed';
+    const message = 'Melds were not valid';
     await emit_meld_update(io, location, message)
   }
 
