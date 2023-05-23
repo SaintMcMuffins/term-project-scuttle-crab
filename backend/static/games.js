@@ -12,7 +12,10 @@ const Games = require('../db/games.js');
 // OppositeDraw is first turn only. Player can draw from discard or end turn, pass to other
 // DealerDraw is first turn only. Player can draw from discard or end turn, pass to other
 // OppositeMustDraw is first turn only. Player must draw from deck.
-// StartKnock starts when knock validates. Player can discard 
+// StartKnock starts when knock validates. Player can discard to end turn and move to OpponentKnock
+// OpponentKnock starts when player discards on their StartKnock. Can knock with any deadwood
+// LayOff starts after player valid knocks in OpponentKnock. Player can meld hand with opponent melds. End on valid knock
+    // For OpponentKnock and LayOff, empty knock is valid
 const TurnProgress = {
   OppositeDraw: -3,
   DealerDraw: -2,
@@ -20,6 +23,8 @@ const TurnProgress = {
   Draw: 0,
   Middle: 1,
   StartKnock: 2,
+  OpponentKnock: 3,
+  LayOff: 4,
 };
 
 router.post('/:id/start', async (request, response, next) => {
@@ -161,12 +166,19 @@ const swap_turn = async (game, io) => {
     new_turn = p2;
   }
 
+  // Check for first phase steps
   if (progress == TurnProgress.OppositeDraw) {
     new_progress = TurnProgress.DealerDraw;
   } else {
     if (progress == TurnProgress.DealerDraw) {
       new_progress == TurnProgress.OppositeMustDraw;
     }
+  }
+
+  // Handle swap from special knock phase
+  if(progress == TurnProgress.StartKnock){
+    // Let non-Knocking player meld
+    new_progress == TurnProgress.OpponentKnock
   }
 
   await Games.start_new_turn(game.game_id, new_turn, new_progress);
@@ -379,9 +391,13 @@ const discard_knock = async (io, response, game_id, player_id, game, index) =>{
         }
         await emit_hand_update(io, game_id, player_id, hand)
 
+        // Player discarded facedown for their knock. Opponent must form melds now
+        await Games.set_turn_progress(game_id, TurnProgress.OpponentKnock)
+
+        await swap_turn(game, io)
         response.send()
         response.status(200)
-        // Set turn and turn progress
+        
 
     }else{
         emit_error_message(io, player_id, `/games/${game_id}/${player_id}`, "Cannot discard card from meld")
@@ -401,7 +417,7 @@ router.post('/:id/meld', async (request, response, next) => {
     const player = request.session.user_id;
     const melds = request.body.string;
   
-    const message = "Current melds hand indecies: " + melds
+    const message = "Indexes in melds: \n" + melds
     const location = `/games/${game_id}/${player}`;
 
     await emit_notice(io, location, message)
@@ -417,7 +433,7 @@ router.post('/:id/knock', async (request, response, next) => {
   const game_id = request.params.id;
   const player = request.session.user_id;
   var melds = request.body.melds;
-  const game = await Games.get_game_by_id(game_id);
+  var game = await Games.get_game_by_id(game_id);
 
 //console.log("Melds are currently", game.melds1, " and ", game.melds2)
 //console.log("Melds are currently", game.melds2[0], game.melds2[0][1])
@@ -431,7 +447,7 @@ router.post('/:id/knock', async (request, response, next) => {
     return null;
   }
 
-  if(game.turn_progress != TurnProgress.Middle){
+  if(game.turn_progress != TurnProgress.Middle && game.turn_progress != TurnProgress.OpponentKnock){
     const location = `/games/${game_id}/${player}`;
     const message = 'Could not knock at this time';
     await emit_meld_update(io, location, message)
@@ -470,7 +486,13 @@ router.post('/:id/knock', async (request, response, next) => {
   // Check all melds for validity
   if(has_dupes(melds) == true){
     meld_success = false;
-  }else{
+
+  // Empty meld succeeds automatically if OpponentKnock or LayOff phase
+  }else if (melds.length == 0 && (game.turn_progress == TurnProgress.OpponentKnock || game.turn_progress == TurnProgress.LayOff)){
+    meld_success = true
+    console.log("Knock with empty hand allowed")
+  }
+  else{
     for(var i=0; i < melds.length; i++){
         meld_success = is_valid_meld(hand, melds[i])
         if(meld_success == false){
@@ -480,7 +502,9 @@ router.post('/:id/knock', async (request, response, next) => {
     
     if(meld_success == true){
         var deadwood = remaining_deadwood(hand, melds)
-        if(deadwood > 50 ){
+        // Deadwood must be less than 10 points
+            // If the non-Knocking player is melding here, they're allowed to have more deadwood
+        if(deadwood > 50 && game.TurnProgress != TurnProgress.OpponentKnock){ // TODO: DOn't forget to set this back down to 10
             const location = `/games/${game_id}/${player}`;
             const message = `Deadwood was not less than 10 (${deadwood})`;
             await emit_meld_update(io, location, message)
@@ -498,17 +522,34 @@ router.post('/:id/knock', async (request, response, next) => {
   // Meld really succeeded, go into knock step
   if (meld_success == true){
     await Games.save_meld(game, player, JSON.stringify(melds))
+    // Update local variable with current gamestate
+    game = await Games.get_game_by_id(game_id);
+
    // var game2 = await Games.get_game_by_id(game_id);
     //console.log("Melds are currently", game2.melds1, " and ", game2.melds2)
 
-    const location = `/games/${game_id}`;
-    const message = `Player ${request.session.username} knocked!`;
-    await emit_meld_update(io, location, message)
-    await Games.set_turn_progress(game_id, TurnProgress.StartKnock)
+    // Handle case of non-Knocking player validating melds
+    if(game.turn_progress == TurnProgress.OpponentKnock){
+        const location = `/games/${game_id}/${player}`;
+        const message = `Melds ${request.session.username} formed!`;
+        await emit_meld_update(io, location, message)
+
+        // Reveal all cards and melds, then let the non-Knocking player lay off deadwood
+        await emit_reveal_all(io, game_id, game.player1_id, game.hand2, game.melds1, game.melds2)
+        await emit_reveal_all(io, game_id, game.player2_id, game.hand1, game.melds2, game.melds1)
+
+        await Games.set_turn_progress(game_id, TurnProgress.LayOff)
     }else{
-    const location = `/games/${game_id}/${player}`;
-    const message = 'Melds were not valid';
-    await emit_meld_update(io, location, message)
+        const location = `/games/${game_id}`;
+        const message = `Player ${request.session.username} knocked!`;
+        await emit_meld_update(io, location, message)
+        await Games.set_turn_progress(game_id, TurnProgress.StartKnock)
+    }
+    
+    }else{
+      const location = `/games/${game_id}/${player}`;
+      const message = 'Melds were not valid';
+      await emit_meld_update(io, location, message)
     }
   
 
@@ -713,6 +754,15 @@ const emit_meld_update = async (io, location, message) => {
 const emit_unselect_melds = async (io, game_id, player) => {
     console.log("Emit unselect melds")
     io.to(`/games/${game_id}/${player}`).emit('unselect-melds')
+}
+
+const emit_reveal_all = async(io, game_id, player, opponent_hand, player_meld, opponent_meld) =>{
+    console.log("Emit reveal all")
+    io.to(`/games/${game_id}/${player}`).emit('reveal-cards', {
+        opponent_hand: opponent_hand,
+        player_meld: player_meld,
+        opponent_meld: opponent_meld,
+    })
 }
 
 const emit_error_message = async (io, player, location, message) => {
