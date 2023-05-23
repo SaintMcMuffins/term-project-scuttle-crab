@@ -335,12 +335,40 @@ router.post('/:id/discard', async (request, response, next) => {
   }
 });
 
-// Check if allowed to meld, check for valid meld
+// Emits to player what meld they just made
+    // Melds are client-side until send with knock, so they can refresh
+    // themselves by checking chat
 router.post('/:id/meld', async (request, response, next) => {
+    const io = request.app.get('io');
+    const game_id = request.params.id;
+    const player = request.session.user_id;
+    const melds = request.body.string;
+  
+    const message = "Current melds hand indecies: " + melds
+    const location = `/games/${game_id}/${player}`;
+
+    await emit_made_meld(io, location, message)
+
+    response.send()
+    response.status(200)
+
+})
+
+// Check if allowed to meld, check for valid meld
+router.post('/:id/knock', async (request, response, next) => {
   const io = request.app.get('io');
   const game_id = request.params.id;
   const player = request.session.user_id;
-  const meld = request.body.selected_cards;
+  const melds = request.body.selected_cards;
+
+  if (!is_valid_access(game_id, player)) {
+    response.send();
+
+    response.status(403);
+    return null;
+  }
+
+
   const hand = await Games.get_hand_by_player(game_id, player);
   if (is_valid_meld(hand, meld)) {
     const location = `/games/${game_id}/${player}`;
@@ -352,9 +380,7 @@ router.post('/:id/meld', async (request, response, next) => {
     await emit_meld_update(io, location, message)
   }
 
-  if (!is_valid_access(game_id, player)) {
-    return null;
-  }
+  
 });
 
 const is_valid_meld = (hand, meld) => {
@@ -459,5 +485,17 @@ const emit_error_message = async (io, player, location, message) => {
     timestamp,
   });
 };
+
+const emit_made_meld = async (io, location, message) => {
+    console.log('Emitting ', message);
+    const username = 'NOTICE: ';
+    const timestamp = new Date().toISOString();
+  
+    io.to(location).emit('chat-message-received', {
+      message,
+      username,
+      timestamp,
+    });
+  };
 
 module.exports = router;

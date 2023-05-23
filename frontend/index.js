@@ -107,6 +107,7 @@ if (pass_button != null && pass_button.value != null) {
 // puts clicked cards into an array to be checked if meld possible or not
 const select_card = document.querySelectorAll('.p1-item');
 var selected_cards = [];
+var melds = [];
 var draw_pile = [10];
 
 select_card.forEach((card) => {
@@ -143,11 +144,36 @@ if (discard_button != null && discard_button.value != null) {
 const meld_button = document.getElementById('meld-button');
 if (meld_button != null && meld_button.value != null) {
   meld_button.addEventListener('click', () => {
-    fetch(`/games/${meld_button.value}/meld`, {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ selected_cards }),
-    });
+    if (selected_cards.length > 0){
+        // Push to melds and reset selected
+        console.log("Pushing ", selected_cards)
+        melds.push(selected_cards)
+        console.log("Have meld ", melds)
+
+        for(var i=0; i < selected_cards.length; i++){
+            select_card[selected_cards[i]].classList.remove('highlighted');
+
+        }
+
+        selected_cards = []
+
+        const string = melds.toString()
+        fetch(`/games/${meld_button.value}/meld`, {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ string }),
+            
+          });
+    }else{
+        console.log("Tried to push nothing!")
+
+    }
+
+   // fetch(`/games/${meld_button.value}/meld`, {
+     // method: 'post',
+     // headers: { 'Content-Type': 'application/json' },
+     // body: JSON.stringify({ selected_cards }),
+    //});
   });
 }
 const draw_card = document.getElementById('draw-card');
@@ -185,9 +211,9 @@ if (knock_button != null && knock_button.value != null) {
     fetch(`/games/${knock_button.value}/knock`, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ selected_cards }),
+      body: JSON.stringify({ melds }),
     });
-    console.log('Cards you selected:', selected_cards);
+    console.log('Cards you are melding:', melds);
   });
 }
 // TODO: meld validation from selected cards & emit
