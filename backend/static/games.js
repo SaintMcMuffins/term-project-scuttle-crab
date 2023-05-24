@@ -474,6 +474,7 @@ router.post('/:id/knock', async (request, response, next) => {
   const player = request.session.user_id;
   var melds = request.body.melds;
   var game = await Games.get_game_by_id(game_id);
+  var hand_after = null
 
 //console.log("Melds are currently", game.melds1, " and ", game.melds2)
 //console.log("Melds are currently", game.melds2[0], game.melds2[0][1])
@@ -541,10 +542,12 @@ router.post('/:id/knock', async (request, response, next) => {
     }
     
     if(meld_success == true){
-        var deadwood = remaining_deadwood(hand, melds)
+        var result = remaining_deadwood(hand, melds)
+        var deadwood = result[0]
+        hand_after = result[1]
         // Deadwood must be less than 10 points
             // If the non-Knocking player is melding here, they're allowed to have more deadwood
-        if(deadwood > 50 && game.TurnProgress != TurnProgress.OpponentKnock){ // TODO: DOn't forget to set this back down to 10
+        if(deadwood > 60 && game.TurnProgress != TurnProgress.OpponentKnock){ // TODO: Don't forget to set this back down to 10
             const location = `/games/${game_id}/${player}`;
             const message = `Deadwood was not less than 10 (${deadwood})`;
             await emit_meld_update(io, location, message)
@@ -561,7 +564,8 @@ router.post('/:id/knock', async (request, response, next) => {
 
   // Meld really succeeded, go into knock step
   if (meld_success == true){
-    await Games.save_meld(game, player, JSON.stringify(melds))
+    await Games.save_meld(game, player, JSON.stringify(melds), hand_after)
+    await emit_hand_update(io, game_id, player, hand_after)
     // Update local variable with current gamestate
     game = await Games.get_game_by_id(game_id);
 
@@ -649,7 +653,7 @@ const has_dupes = (melds) =>{
 }
 
 // Check which cards are not in melds
-// Add value of those cards and return it
+// Add value of those cards and return it and the new hand in array
 const remaining_deadwood = (hand, melds_index) =>{
     var melds = []
     for(i=0; i < melds_index.length; i++){
@@ -673,7 +677,7 @@ const remaining_deadwood = (hand, melds_index) =>{
         deadwood = deadwood + Math.min((hand_copy[i] % 13), 10)
     }
 
-    return deadwood
+    return [deadwood, hand_copy]
 }
 
 const cardID_to_hand = (hand, meld) => {
@@ -821,12 +825,12 @@ const emit_notice = async (io, location, message) => {
     console.log('Emitting ', message);
     const username = 'NOTICE: ';
     const timestamp = ""
-  
+
     io.to(location).emit('chat-message-received', {
-      message,
-      username,
-      timestamp,
+        message,
+        username,
+        timestamp,
     });
-  };
+};
 
 module.exports = router;

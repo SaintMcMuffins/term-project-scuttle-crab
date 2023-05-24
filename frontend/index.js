@@ -228,4 +228,8 @@ socket.on('unselect-melds', () => {
   melds = []
 
 });
+
+socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
+    
+})
 // TODO: meld validation from selected cards & emit

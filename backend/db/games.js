@@ -435,16 +435,16 @@ const set_turn_progress = async (game_id, progress) => {
   ]);
 };
 
-const save_meld = async(game, player_id, melds) =>{
+const save_meld = async(game, player_id, melds, new_hand) =>{
   if (player_id == game.player1_id){
     await db.none(
-        `UPDATE games SET melds1=$1 WHERE game_id=$2`,
-        [melds, game.game_id]
+        `UPDATE games SET melds1=$1, hand1=$2 WHERE game_id=$3`,
+        [melds, new_hand, game.game_id]
     )
   }else{
     await db.none(
-        `UPDATE games SET melds2=$1 WHERE game_id=$2`,
-        [melds, game.game_id]
+        `UPDATE games SET melds2=$1, hand2=$2 WHERE game_id=$3`,
+        [melds, new_hand, game.game_id]
     )
   }
 }
