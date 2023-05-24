@@ -60,7 +60,23 @@
   grid-row: 5 / 5;
 }
 
+.blank2 {
+    border-radius: 10px;
+    grid-row: 2 / 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .p1-meld-item {
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-row: 4 / 5;
+  }
+
+  .blank1 {
     border-radius: 10px;
     display: flex;
     justify-content: center;

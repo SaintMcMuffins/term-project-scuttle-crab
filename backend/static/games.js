@@ -107,7 +107,7 @@ router.get('/:id', async (request, response, next) => {
         }
         
         for(i=0; i < game.melds1.length; i++){
-            other_melds.push(game.melds2[i])
+            other_melds.push(game.melds1[i])
         }        
       }
       var top_card = game.discard[game.discard_index];
@@ -116,10 +116,11 @@ router.get('/:id', async (request, response, next) => {
       console.log("Player melds: ", game.melds2)
       console.log("Player melds: ", player_melds)
 
-      // Player shouldn't see opponent hand or melds unless final phase
+      // Player shouldn't see any melds unless final phase
       if(game.turn_progress < TurnProgress.LayOff){
         other_hand = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         other_melds = []
+        player_melds = []
       }
 
    //   if(game.turn_progress < TurnProgress.OpponentKnock){
@@ -142,6 +143,9 @@ router.get('/:id', async (request, response, next) => {
         loggedIn: true,
         can_pass: game.turn_progress < -1,
       });
+
+      
+
     } else {
       // Player tried to access game, but is not in game
       console.log("Player tried to join game they aren't in");
@@ -234,6 +238,9 @@ router.post('/:id/draw_deck', async (request, response, next) => {
   const player = request.session.user_id;
   const game = await Games.get_game_by_id(game_id);
 
+  // Easy test for emit
+  //await emit_reveal_all(io, game_id, game.player1_id, game.hand2, game.melds1, game.melds2)
+  //await emit_reveal_all(io, game_id, game.player2_id, game.hand1, game.melds2, game.melds1)
   if (is_valid_access(game, player) == false) {
     response.send();
 
@@ -416,7 +423,10 @@ const discard_knock = async (io, response, game_id, player_id, game, index) =>{
     for(i=0; i < melds.length; i++){
         for(j=0; j < melds[i].length; j++){
             var meld_values = cardID_to_hand(hand, melds[i])
-            if (hand[index] == meld_values[j]){ // Card is in meld, can't discard
+            // Card is in meld or doesn't exist, can't discard
+                // Cards melded turn to 0 in the hand, so we check to make sure
+                // they aren't trying to discard nothing
+            if (hand[index] < 1){ 
                 can_discard = false
                 break
             }
@@ -475,6 +485,7 @@ router.post('/:id/knock', async (request, response, next) => {
   var melds = request.body.melds;
   var game = await Games.get_game_by_id(game_id);
   var hand_after = null
+  var melds_to_save = null
 
 //console.log("Melds are currently", game.melds1, " and ", game.melds2)
 //console.log("Melds are currently", game.melds2[0], game.melds2[0][1])
@@ -521,6 +532,7 @@ router.post('/:id/knock', async (request, response, next) => {
   }
 
   const hand = await Games.get_hand_by_player(game_id, player);
+  hand_after = hand
   var meld_success = (melds.length > 0)
 
   console.log("Checking knock")
@@ -545,6 +557,7 @@ router.post('/:id/knock', async (request, response, next) => {
         var result = remaining_deadwood(hand, melds)
         var deadwood = result[0]
         hand_after = result[1]
+        melds_to_save = result[2]
         // Deadwood must be less than 10 points
             // If the non-Knocking player is melding here, they're allowed to have more deadwood
         if(deadwood > 60 && game.TurnProgress != TurnProgress.OpponentKnock){ // TODO: Don't forget to set this back down to 10
@@ -564,7 +577,17 @@ router.post('/:id/knock', async (request, response, next) => {
 
   // Meld really succeeded, go into knock step
   if (meld_success == true){
-    await Games.save_meld(game, player, JSON.stringify(melds), hand_after)
+    if (hand_after == null){
+        console.log("Hand after discarding was null")
+       // hand_after = 
+    }
+
+    if(melds_to_save == null){
+        melds_to_save = []
+    }
+    console.log("Melds we're saving: ", melds_to_save)
+
+    await Games.save_meld(game, player, JSON.stringify(melds_to_save), hand_after)
     await emit_hand_update(io, game_id, player, hand_after)
     // Update local variable with current gamestate
     game = await Games.get_game_by_id(game_id);
@@ -654,6 +677,7 @@ const has_dupes = (melds) =>{
 
 // Check which cards are not in melds
 // Add value of those cards and return it and the new hand in array
+// Also returns new set of melds that match card value
 const remaining_deadwood = (hand, melds_index) =>{
     var melds = []
     for(i=0; i < melds_index.length; i++){
@@ -677,7 +701,7 @@ const remaining_deadwood = (hand, melds_index) =>{
         deadwood = deadwood + Math.min((hand_copy[i] % 13), 10)
     }
 
-    return [deadwood, hand_copy]
+    return [deadwood, hand_copy, melds]
 }
 
 const cardID_to_hand = (hand, meld) => {
@@ -802,10 +826,13 @@ const emit_unselect_melds = async (io, game_id, player) => {
 
 const emit_reveal_all = async(io, game_id, player, opponent_hand, player_meld, opponent_meld) =>{
     console.log("Emit reveal all")
+    console.log("Hand: ", opponent_hand)
+    console.log("Player meld: ", player_meld)
+    console.log("Opponent_meld: ", opponent_meld)
     io.to(`/games/${game_id}/${player}`).emit('reveal-cards', {
-        opponent_hand: opponent_hand,
-        player_meld: player_meld,
-        opponent_meld: opponent_meld,
+        opponent_hand,
+        player_meld,
+        opponent_meld,
     })
 }
 

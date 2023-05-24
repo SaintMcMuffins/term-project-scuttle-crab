@@ -229,7 +229,65 @@ socket.on('unselect-melds', () => {
 
 });
 
+var p1_melds = 0
+// Find opponent hand cards, set their ID
+// For each meld in each melds, place div on game field, plus some divider to make melds obvious
 socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
-    
+    console.log("Trying to reveal cards")
+
+    player_meld = opponent_hand.player_meld
+    opponent_meld = opponent_hand.opponent_meld
+    opponent_hand = opponent_hand.opponent_hand
+    // Reveal opponent's cards
+    const hand_element = document.getElementsByClassName('p2-item');
+    console.log("Enemy ", hand_element)
+    console.log("Opponent meld is ", opponent_meld.length)
+    console.log("Player meld is ", player_meld.length)
+    console.log("Opponent hand is ", opponent_hand.length)
+
+
+    for (var i = 0; i < hand_element.length; i++) {
+        var cardElement = hand_element[i];
+        if (i < opponent_hand.length) {
+            cardElement.id = 'card' + opponent_hand[i]; // update card id
+        }
+    }
+
+    // Get card area div to append to
+    var card_area = document.getElementsByClassName('card-area')
+    if(card_area != null){
+        card_area = card_area[0]
+    }else{
+        console.log("Couldn't get card area")
+
+    }
+
+    for(var i = 0; i < player_meld.length; i++){
+        for(var j = 0; j < player_meld[i].length; j++){
+            var card = document.createElement('div');
+            card.classList.add("p1-meld-item")
+            card.id = "card" + player_meld[i][j]
+            card_area.appendChild(card)
+        }
+
+        var card = document.createElement('div');
+        card.classList.add("blank1")
+        card_area.appendChild(card)
+    }
+
+    for(var i = 0; i < opponent_meld.length; i++){
+        for(var j = 0; j < opponent_meld[i].length; j++){
+            var card = document.createElement('div');
+            card.classList.add("p2-meld-item")
+            card.id = "card" + opponent_meld[i][j]
+            card_area.appendChild(card)
+        }
+
+        var card = document.createElement('div');
+        card.classList.add("blank2")
+        card_area.appendChild(card)
+    }
+
+
 })
 // TODO: meld validation from selected cards & emit
