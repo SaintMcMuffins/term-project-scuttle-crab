@@ -77,9 +77,12 @@ router.get('/:id', async (request, response, next) => {
       game.player1_id == request.session.user_id ||
       (game.player2_id != null && game.player2_id == request.session.user_id)
     ) {
-      // Player only needs to know their own hand
+      // Player only needs to know and show their hand if not final phase of game
       // TODO: Check if opposite player has knocked. Will need to show
-      var player_hand = null;
+      var player_hand = [];
+      var other_hand = [];
+      var player_melds = [];
+      var other_melds = [];
 
       var cur_player_name = player2_name.username;
       if (game.player1_id == game.turn) {
@@ -87,10 +90,41 @@ router.get('/:id', async (request, response, next) => {
       }
       if (request.session.user_id == game.player1_id) {
         player_hand = game.hand1;
+        other_hand = game.hand2
+        // melds are JSON object
+        for(i=0; i < game.melds1.length; i++){
+            player_melds.push(game.melds1[i])
+        }
+
+        for(i=0; i < game.melds2.length; i++){
+            other_melds.push(game.melds2[i])
+        }        
       } else {
         player_hand = game.hand2;
+        other_hand = game.hand1
+        for(i=0; i < game.melds2.length; i++){
+            player_melds.push(game.melds2[i])
+        }
+        
+        for(i=0; i < game.melds1.length; i++){
+            other_melds.push(game.melds2[i])
+        }        
       }
       var top_card = game.discard[game.discard_index];
+
+    
+      console.log("Player melds: ", game.melds2)
+      console.log("Player melds: ", player_melds)
+
+      // Player shouldn't see opponent hand or melds unless final phase
+      if(game.turn_progress < TurnProgress.LayOff){
+        other_hand = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        other_melds = []
+      }
+
+   //   if(game.turn_progress < TurnProgress.OpponentKnock){
+     // }
+       
       response.render('game.ejs', {
         title: 'Game',
         roomname: game.game_id,
@@ -101,6 +135,9 @@ router.get('/:id', async (request, response, next) => {
         player1: game.player1_id,
         player2: game.player2_id,
         hand: player_hand,
+        opponent_hand: other_hand,
+        melds: player_melds,
+        opponent_melds: other_melds,
         discard_top: top_card,
         loggedIn: true,
         can_pass: game.turn_progress < -1,
@@ -171,15 +208,18 @@ const swap_turn = async (game, io) => {
     new_progress = TurnProgress.DealerDraw;
   } else {
     if (progress == TurnProgress.DealerDraw) {
-      new_progress == TurnProgress.OppositeMustDraw;
+      new_progress = TurnProgress.OppositeMustDraw;
     }
   }
 
   // Handle swap from special knock phase
   if(progress == TurnProgress.StartKnock){
     // Let non-Knocking player meld
-    new_progress == TurnProgress.OpponentKnock
+    new_progress = TurnProgress.OpponentKnock
   }
+
+
+  console.log("Starting new turn with turn ", new_progress)
 
   await Games.start_new_turn(game.game_id, new_turn, new_progress);
 
@@ -242,6 +282,7 @@ router.post('/:id/draw_discard', async (request, response, next) => {
     return null;
   }
 
+  console.log("In draw discard with ", game.turn_progress)
   if (
     game.discard_index != 0 &&
     (game.turn_progress == TurnProgress.Draw ||
@@ -297,6 +338,7 @@ router.post('/:id/discard', async (request, response, next) => {
   
   // Special processing if Knock's discard
   if (game.turn_progress == TurnProgress.StartKnock && index != -1 && index < 11){
+    console.log("Knock discard")
     await discard_knock(io, response, game_id, player, game, index)
     return null
   }
@@ -390,10 +432,8 @@ const discard_knock = async (io, response, game_id, player_id, game, index) =>{
             hand = game2.hand2
         }
         await emit_hand_update(io, game_id, player_id, hand)
-
+        console.log("Turn is ", game.turn_progress)
         // Player discarded facedown for their knock. Opponent must form melds now
-        await Games.set_turn_progress(game_id, TurnProgress.OpponentKnock)
-
         await swap_turn(game, io)
         response.send()
         response.status(200)
