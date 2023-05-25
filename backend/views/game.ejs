@@ -62,7 +62,6 @@
 
 
             <!-- First player's card hand content goes here -->
-            <% let i = 0 %>
             <% hand.forEach(function(c) { %>
               <div class="p1-item" id="card<%= c %>"></div>
             <% }); %>
@@ -74,18 +73,22 @@
             
             <!-- First player's melds go here -->
             <% melds.forEach(function(m) { %> 
+                <% let i = 0 %>
                 <% m.forEach(function(c) { %>
-                    <div class="p1-meld-item" id="card<%= c %>"></div>
+                    <div class="p1-meld-item <%= i %>" id="card<%= c %>"></div>
                 <% }); %>
+                <% i = i + 1 %>
                 <div class="blank1"></div>
 
             <% }); %>
 
             <!-- Second player's melds go here -->
             <% opponent_melds.forEach(function(m) { %> 
+                <% let i = 0 %>
                 <% m.forEach(function(c) { %>
-                    <div class="p2-meld-item" id="card<%= c %>"></div>
+                    <div class="p2-meld-item <%= i %>" id="card<%= c %>"></div>
                 <% }); %>
+                <% i = i + 1 %>
                 <div class="blank2"></div>
 
             <% }); %>

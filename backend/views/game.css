@@ -52,6 +52,18 @@
   align-items: center;
 }
 
+.p2-meld-item:hover {
+  box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+}
+  
+.p2-meld-item.highlighted {
+  box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+}
+
+.p2-meld-item.melded {
+    box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 30px #39ff14;
+  }
+
 .p1-item {
   border-radius: 10px;
   display: flex;

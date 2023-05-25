@@ -141,13 +141,53 @@ if (discard_button != null && discard_button.value != null) {
   });
 }
 
+// This will be null until Lay Off phase
+var opponent_melds = document.getElementsByClassName("p2-meld-item")
+var selected_meld = -1 // Index of selected meld to try to meld with
+
+// Allows player to click on opponent melds to add them
+// Click should highlight all melds of same group, and set selected_meld to ID
+const set_meld_interactions = () =>{
+    for(var i = 0; i < opponent_melds.length; i++){
+        opponent_melds[i].addEventListener('click', (event) => {
+            const meld_number = parseInt(event.target.classList[1]) // index of meld
+            console.log("Selected is ", selected_meld)
+            console.log("Selected is ", meld_number)
+
+            if (selected_meld == meld_number) {
+                // Unhighlight melds in same group as selected
+                for(var i = 0; i < opponent_melds.length; i++){
+                    if (parseInt(opponent_melds[i].classList[1]) == meld_number){
+                        opponent_melds[i].classList.remove('highlighted')
+                    }
+                }
+
+                selected_meld = -1
+            } else {
+                // Card is not selected, add highlight to same group
+                for(var i = 0; i < opponent_melds.length; i++){
+                    if (parseInt(opponent_melds[i].classList[1]) == meld_number){
+                        opponent_melds[i].classList.add('highlighted')
+                    }
+                }
+
+                selected_meld = meld_number
+            }
+        
+         //   console.log('Cards you selected:', selected_meld);
+           console.log(JSON.stringify({ melds, selected_meld }))
+        });
+    }
+}
+
+set_meld_interactions()
+
 const meld_button = document.getElementById('meld-button');
 if (meld_button != null && meld_button.value != null) {
   meld_button.addEventListener('click', () => {
+    // Push to melds and reset selected
     if (selected_cards.length > 0){
-        // Push to melds and reset selected
         console.log("Pushing ", selected_cards)
-        melds.push(selected_cards)
         console.log("Have meld ", melds)
 
         for(var i=0; i < selected_cards.length; i++){
@@ -155,6 +195,21 @@ if (meld_button != null && meld_button.value != null) {
             select_card[selected_cards[i]].classList.remove('highlighted');
 
         }
+
+        // In Lay Off phase, can select a meld. Will push meld index to set
+        // *-1 will be used to signify that this is a meld and needs to be fetched
+            // -1 to avoid 0
+        if(selected_meld != -1){
+            for(var i = 0; i < opponent_melds.length; i++){
+                if (parseInt(opponent_melds[i].classList[1]) == selected_meld){
+                    opponent_melds[i].classList.add('melded')
+                }
+            }
+
+            selected_cards.push((selected_meld+1)*-1)
+        }
+
+        melds.push(selected_cards)
 
         selected_cards = []
 
@@ -221,7 +276,17 @@ if (knock_button != null && knock_button.value != null) {
 socket.on('unselect-melds', () => {
   for(var i=0; i < melds.length; i++){
     for(var j=0; j < melds[i].length; j++){
-      select_card[melds[i][j]].classList.remove("melded")
+      // We may have negative number to indicate meld with a meld. Handle
+      if(melds[i][j] < 0){
+        var index = Math.abs(melds[i][j])-1 // Revert conversion used to indicate meld
+        for(var k = 0; k < opponent_melds.length; k++){
+            if (parseInt(opponent_melds[k].classList[1]) == index){
+                opponent_melds[k].classList.remove('melded')
+            }
+        }
+      }else{
+        select_card[melds[i][j]].classList.remove("melded")
+      }
     }
   }
 
@@ -229,7 +294,7 @@ socket.on('unselect-melds', () => {
 
 });
 
-var p1_melds = 0
+
 // Find opponent hand cards, set their ID
 // For each meld in each melds, place div on game field, plus some divider to make melds obvious
 socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
@@ -240,10 +305,6 @@ socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
     opponent_hand = opponent_hand.opponent_hand
     // Reveal opponent's cards
     const hand_element = document.getElementsByClassName('p2-item');
-    console.log("Enemy ", hand_element)
-    console.log("Opponent meld is ", opponent_meld.length)
-    console.log("Player meld is ", player_meld.length)
-    console.log("Opponent hand is ", opponent_hand.length)
 
 
     for (var i = 0; i < hand_element.length; i++) {
@@ -288,6 +349,8 @@ socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
         card_area.appendChild(card)
     }
 
+    // Now that divs exist, set onClick events
+    set_meld_interactions()
 
 })
-// TODO: meld validation from selected cards & emit
+
