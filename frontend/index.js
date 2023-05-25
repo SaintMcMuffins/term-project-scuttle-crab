@@ -2,7 +2,7 @@ const io = require('socket.io-client');
 const socket = io();
 const messageContainer = document.querySelector('#messages');
 
-// From 4/17 section 1
+// From 4/17 section 1, add new chat message
 socket.on('chat-message-received', ({ username, message, timestamp }) => {
   const entry = document.createElement('div');
 
@@ -30,11 +30,12 @@ socket.on('chat-message-received', ({ username, message, timestamp }) => {
   messageContainer.appendChild(entry);
 });
 
+// Redirect players in the lobby to their started game
 socket.on('redirect-to-game', ({ game_id }) => {
-  console.log('Socket caught it', game_id);
   window.location.href = `/games/${game_id}`;
 });
 
+// Update lobby in real-time with new player
 socket.on('player-joined-lobby', ({ p2 }) => {
   const players_in_lobby = document.getElementsByClassName('player_name_header');
   if (players_in_lobby[1] != null) {
@@ -42,6 +43,7 @@ socket.on('player-joined-lobby', ({ p2 }) => {
   }
 });
 
+// Update hand with new state
 socket.on('update-hand', ({ hand }) => {
   var handElement = document.getElementsByClassName('p1-item');
   for (var i = 0; i < handElement.length; i++) {
@@ -52,6 +54,7 @@ socket.on('update-hand', ({ hand }) => {
   }
 });
 
+// Update opponent hand with new state
 socket.on('update-other-hand', ({ hand }) => {
     var handElement = document.getElementsByClassName('p2-item');
     for (var i = 0; i < handElement.length; i++) {
@@ -62,18 +65,21 @@ socket.on('update-other-hand', ({ hand }) => {
     }
 });
 
+// Update display of whose turn it is
 socket.on('update-turn', ({ player, is_passable_turn }) => {
   var playerElement = document.querySelector('.player-turn-indicator');
   playerElement.innerHTML = player + "'s turn!";
 
 });
 
+// Use turn display to show who won
 socket.on('game-over', ({ winner, final_points }) => {
     var playerElement = document.querySelector('.player-turn-indicator');
     playerElement.innerHTML = winner + " wins! " + final_points + " points";
   
   });
 
+// Update appearance of discard pile
 socket.on('update-discard-pile', ({ discard_top }) => {
   var discardPileElement = document.getElementsByClassName("pile")[0];
   discardPileElement.id = 'card' + discard_top; // update top card id
@@ -90,6 +96,7 @@ if (start_button != null && start_button.value != null) {
   });
 }
 
+// Send message on Enter
 const chat_box = document.querySelector('input#chat__message');
 if (chat_box != null) {
   chat_box.addEventListener('keydown', (event) => {
@@ -109,6 +116,7 @@ if (chat_box != null) {
   });
 }
 
+// Try to end turn when clicking Pass button
 const pass_button = document.getElementById('pass-button');
 if (pass_button != null && pass_button.value != null) {
   pass_button.addEventListener('click', () => {
@@ -126,6 +134,7 @@ var selected_cards = [];
 var melds = [];
 var draw_pile = [10];
 
+// Makes each card clickable. Adds cards to list of selected cards for melding
 select_card.forEach((card) => {
   card.addEventListener('click', (event) => {
     const clickedCard = event.target;
@@ -142,7 +151,6 @@ select_card.forEach((card) => {
       selected_cards.push(cardIndex);
     }
 
-    console.log('Cards you selected:', selected_cards);
   });
 });
 
@@ -248,6 +256,8 @@ if (meld_button != null && meld_button.value != null) {
     //});
   });
 }
+
+// Send request to draw from deck
 const draw_card = document.getElementById('draw-card');
 if (draw_card != null && draw_card.value != null) {
   draw_card.addEventListener('click', () => {
@@ -261,6 +271,7 @@ if (draw_card != null && draw_card.value != null) {
   });
 }
 
+// Send request to draw from discard pile
 const draw_discard = document.getElementsByClassName("pile");
 // Wasn't reading div value, so using draw card value
 if (draw_discard.length != 0 && draw_card != null & draw_card.value != null) {
@@ -277,6 +288,7 @@ if (draw_discard.length != 0 && draw_card != null & draw_card.value != null) {
   
 }
 
+// Send request to try to knock with selected melds
 const knock_button = document.getElementById('knock-button');
 if (knock_button != null && knock_button.value != null) {
   knock_button.addEventListener('click', () => {
@@ -289,6 +301,7 @@ if (knock_button != null && knock_button.value != null) {
   });
 }
 
+// Remove melds selected
 socket.on('unselect-melds', () => {
   for(var i=0; i < melds.length; i++){
     for(var j=0; j < melds[i].length; j++){
