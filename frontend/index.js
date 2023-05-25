@@ -36,9 +36,9 @@ socket.on('redirect-to-game', ({ game_id }) => {
 });
 
 socket.on('player-joined-lobby', ({ p2 }) => {
-  const players_in_lobby = document.getElementsByClassName('player_names');
+  const players_in_lobby = document.getElementsByClassName('player_name_header');
   if (players_in_lobby[1] != null) {
-    players_in_lobby[1].innerText = p2;
+    players_in_lobby[1].innerText = ("- " + p2);
   }
 });
 
@@ -350,6 +350,7 @@ socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
     }
 
     // Now that divs exist, set onClick events
+    opponent_melds = document.getElementsByClassName("p2-meld-item")
     set_meld_interactions()
 
 })
