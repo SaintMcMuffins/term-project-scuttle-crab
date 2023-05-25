@@ -64,6 +64,7 @@ router.post('/login', async (request, response) => {
   } catch (error) {
     console.log(error);
     response.render('login', { title: 'Gin Rummy', email, message: 'error' });
+    response.redirect('/login');
   }
 });
 

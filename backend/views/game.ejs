@@ -51,25 +51,49 @@
 
           <div class="card-area">
             <!-- Card area content goes here -->
-            <div class="pile" id="card<%= discard_top %>"></div>
             
+            <div class="pile" id="card<%= discard_top %>" value=<%= roomname %>></div>
+            <% if (can_pass) { %> 
+            <button style="--clr:#666666" class="b5" id="pass-button" value=<%= roomname %>><span>Pass</span><i></i></button>
+            <% } %>
+            <div class="player-turn-indicator" value=<%= current_player %>><%= current_player %>'s turn</div>
+
+            
+
+
             <!-- First player's card hand content goes here -->
             <% hand.forEach(function(c) { %>
               <div class="p1-item" id="card<%= c %>"></div>
             <% }); %>
       
             <!-- Second player's card hand content goes here -->
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
-            <div class="p2-item" id="card0"></div>
+            <% opponent_hand.forEach(function(c) { %>
+                <div class="p2-item" id="card<%= c %>"></div>
+              <% }); %>
+            
+            <!-- First player's melds go here -->
+            <% melds.forEach(function(m) { %> 
+                <% let i = 0 %>
+                <% m.forEach(function(c) { %>
+                    <div class="p1-meld-item <%= i %>" id="card<%= c %>"></div>
+                <% }); %>
+                <% i = i + 1 %>
+                <div class="blank1"></div>
+
+            <% }); %>
+
+            <!-- Second player's melds go here -->
+            <% opponent_melds.forEach(function(m) { %> 
+                <% let i = 0 %>
+                <% m.forEach(function(c) { %>
+                    <div class="p2-meld-item <%= i %>" id="card<%= c %>"></div>
+                <% }); %>
+                <% i = i + 1 %>
+                <div class="blank2"></div>
+
+            <% }); %>
+
+
           </div>
         </div>
       </div>

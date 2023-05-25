@@ -330,7 +330,7 @@ const draw_from_discard = async (game_id, player_id) => {
       );
     }
 
-    return info.discard[info.discard_index];
+    return info.discard[new_index];
   }
 };
 
@@ -368,13 +368,13 @@ const discard_from_deck = async (game_id) => {
   console.log(index);
 };
 
+// Sets some card in the hand to 0 and adds to top of discard pile, and moves discard index
 const discard_from_hand = async (game_id, player_id, index) => {
   var game = await get_game_by_id(game_id);
 
   console.log(player_id, index);
   var new_index = game.discard_index + 1;
   var hand = await get_hand_by_player(game_id, player_id);
-  console.log(hand);
 
   game.discard[new_index] = hand[index];
 
@@ -435,6 +435,61 @@ const set_turn_progress = async (game_id, progress) => {
   ]);
 };
 
+const save_meld = async (game, player_id, melds, new_hand) => {
+  if (player_id == game.player1_id) {
+    await db.none(`UPDATE games SET melds1=$1, hand1=$2 WHERE game_id=$3`, [
+      melds,
+      new_hand,
+      game.game_id,
+    ]);
+  } else {
+    await db.none(`UPDATE games SET melds2=$1, hand2=$2 WHERE game_id=$3`, [
+      melds,
+      new_hand,
+      game.game_id,
+    ]);
+  }
+};
+
+const save_hand = async(game, player_id, new_hand) => {
+    if (player_id == game.player1_id) {
+        await db.none(`UPDATE games SET hand1=$1 WHERE game_id=$2`, [
+          new_hand,
+          game.game_id,
+        ]);
+    } else {
+        await db.none(`UPDATE games SET hand2=$1 WHERE game_id=$2`, [
+            new_hand,
+            game.game_id,
+        ]);
+    }
+}
+
+const discard_facedown = async (game, player_id, index) => {
+  if (player_id == game.player1_id) {
+    var hand = game.hand1;
+    hand[index] = 0;
+    await db.none(
+      `UPDATE games SET discard_index=$1, hand1=$2 WHERE game_id=$3`,
+      [0, hand, game.game_id]
+    );
+  } else {
+    var hand = game.hand2;
+    hand[index] = 0;
+    await db.none(
+      `UPDATE games SET discard_index=$1, hand2=$2 WHERE game_id=$3`,
+      [0, hand, game.game_id]
+    );
+  }
+};
+
+const set_complete = async(game_id, points) =>{
+    await db.none(
+        `UPDATE games SET complete=$1, points=$2 WHERE game_id=$3`,
+        [true, points, game_id]
+    );
+}
+
 module.exports = {
   createGameSQL,
   insertFirstUserSQL,
@@ -459,4 +514,8 @@ module.exports = {
   discard_from_hand,
   set_turn_progress,
   start_new_turn,
+  save_meld,
+  save_hand,
+  discard_facedown,
+  set_complete,
 };

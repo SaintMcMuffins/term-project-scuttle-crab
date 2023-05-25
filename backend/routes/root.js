@@ -37,7 +37,7 @@ router.get('/findgame', async (request, response, next) => {
   const game = await Games.find_open_game();
 
   // Redirect back home if join fails or game isn't found
-  if (game != null) {
+  if (game != null && request.session.user_id != game.player1_id) {
     try {
       await Games.join_game(game.game_id, request.session.user_id);
       const io = request.app.get('io');
