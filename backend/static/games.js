@@ -5,8 +5,8 @@ const Games = require('../db/games.js');
 // Enum describing what is allowed on what part of the turn, see game.turn_progress
 // Draw is start of turn, player can draw from deck or discard
 // Middle is when player can select cards for actions. Allowed to:
-    // Discard: ends turn
-    // Knock
+// Discard: ends turn
+// Knock
 // Three special draw phases can happen only at the start of the game, in this order.
 // If a draw happens, skip to Middle and play as normal
 // OppositeDraw is first turn only. Player can draw from discard or end turn, pass to other
@@ -15,7 +15,7 @@ const Games = require('../db/games.js');
 // StartKnock starts when knock validates. Player can discard to end turn and move to OpponentKnock
 // OpponentKnock starts when player discards on their StartKnock. Can knock with any deadwood
 // LayOff starts after player valid knocks in OpponentKnock. Player can meld hand with opponent melds. End on valid knock
-    // For OpponentKnock and LayOff, empty knock is valid
+// For OpponentKnock and LayOff, empty knock is valid
 const TurnProgress = {
   OppositeDraw: -3,
   DealerDraw: -2,
@@ -90,42 +90,41 @@ router.get('/:id', async (request, response, next) => {
       }
       if (request.session.user_id == game.player1_id) {
         player_hand = game.hand1;
-        other_hand = game.hand2
+        other_hand = game.hand2;
         // melds are JSON object
-        for(i=0; i < game.melds1.length; i++){
-            player_melds.push(game.melds1[i])
+        for (i = 0; i < game.melds1.length; i++) {
+          player_melds.push(game.melds1[i]);
         }
 
-        for(i=0; i < game.melds2.length; i++){
-            other_melds.push(game.melds2[i])
-        }        
+        for (i = 0; i < game.melds2.length; i++) {
+          other_melds.push(game.melds2[i]);
+        }
       } else {
         player_hand = game.hand2;
-        other_hand = game.hand1
-        for(i=0; i < game.melds2.length; i++){
-            player_melds.push(game.melds2[i])
+        other_hand = game.hand1;
+        for (i = 0; i < game.melds2.length; i++) {
+          player_melds.push(game.melds2[i]);
         }
-        
-        for(i=0; i < game.melds1.length; i++){
-            other_melds.push(game.melds1[i])
-        }        
+
+        for (i = 0; i < game.melds1.length; i++) {
+          other_melds.push(game.melds1[i]);
+        }
       }
       var top_card = game.discard[game.discard_index];
 
-    
-      console.log("Player melds: ", game.melds2)
-      console.log("Player melds: ", player_melds)
+      console.log('Player melds: ', game.melds2);
+      console.log('Player melds: ', player_melds);
 
       // Player shouldn't see any melds unless final phase
-      if(game.turn_progress < TurnProgress.LayOff){
-        other_hand = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        other_melds = []
-        player_melds = []
+      if (game.turn_progress < TurnProgress.LayOff) {
+        other_hand = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        other_melds = [];
+        player_melds = [];
       }
 
-   //   if(game.turn_progress < TurnProgress.OpponentKnock){
-     // }
-       
+      //   if(game.turn_progress < TurnProgress.OpponentKnock){
+      // }
+
       response.render('game.ejs', {
         title: 'Game',
         roomname: game.game_id,
@@ -143,9 +142,6 @@ router.get('/:id', async (request, response, next) => {
         loggedIn: true,
         can_pass: game.turn_progress < -1,
       });
-
-      
-
     } else {
       // Player tried to access game, but is not in game
       console.log("Player tried to join game they aren't in");
@@ -184,7 +180,6 @@ router.post('/:id/end_turn', async (request, response, next) => {
 
     response.status(200);
   } else {
-
     const location = `/games/${game_id}/${player}`;
     const message = 'You cannot end the turn right now';
 
@@ -217,13 +212,12 @@ const swap_turn = async (game, io) => {
   }
 
   // Handle swap from special knock phase
-  if(progress == TurnProgress.StartKnock){
+  if (progress == TurnProgress.StartKnock) {
     // Let non-Knocking player meld
-    new_progress = TurnProgress.OpponentKnock
+    new_progress = TurnProgress.OpponentKnock;
   }
 
-
-  console.log("Starting new turn with turn ", new_progress)
+  console.log('Starting new turn with turn ', new_progress);
 
   await Games.start_new_turn(game.game_id, new_turn, new_progress);
 
@@ -289,7 +283,7 @@ router.post('/:id/draw_discard', async (request, response, next) => {
     return null;
   }
 
-  console.log("In draw discard with ", game.turn_progress)
+  console.log('In draw discard with ', game.turn_progress);
   if (
     game.discard_index != 0 &&
     (game.turn_progress == TurnProgress.Draw ||
@@ -331,9 +325,12 @@ router.post('/:id/discard', async (request, response, next) => {
   const game_id = request.params.id;
   const player = request.session.user_id;
   const game = await Games.get_game_by_id(game_id);
-  var index = -1 
-  if(request.body.selected_cards != null && request.body.selected_cards.length == 1){
-    console.log("Body was not null, and body is length 1")
+  var index = -1;
+  if (
+    request.body.selected_cards != null &&
+    request.body.selected_cards.length == 1
+  ) {
+    console.log('Body was not null, and body is length 1');
     index = request.body.selected_cards[0];
   }
   if (is_valid_access(game, player) == false) {
@@ -342,12 +339,16 @@ router.post('/:id/discard', async (request, response, next) => {
     response.status(403);
     return null;
   }
-  
+
   // Special processing if Knock's discard
-  if (game.turn_progress == TurnProgress.StartKnock && index != -1 && index < 11){
-    console.log("Knock discard")
-    await discard_knock(io, response, game_id, player, game, index)
-    return null
+  if (
+    game.turn_progress == TurnProgress.StartKnock &&
+    index != -1 &&
+    index < 11
+  ) {
+    console.log('Knock discard');
+    await discard_knock(io, response, game_id, player, game, index);
+    return null;
   }
 
   if (
@@ -366,7 +367,6 @@ router.post('/:id/discard', async (request, response, next) => {
         player,
         await Games.get_hand_by_player(game_id, player)
       );
-
 
       await swap_turn(game, io);
       response.send();
@@ -407,75 +407,74 @@ router.post('/:id/discard', async (request, response, next) => {
 
 // Handle discard for knock phase
 // Makes sure index chosen is not a melded card
-const discard_knock = async (io, response, game_id, player_id, game, index) =>{
-    var melds = null
-    var hand = null
-    var can_discard = true
-    if(player_id == game.player1_id){
-        melds = game.melds1
-        hand = game.hand1
-    }else{
-        melds = game.melds2
-        hand = game.hand2
+const discard_knock = async (io, response, game_id, player_id, game, index) => {
+  var melds = null;
+  var hand = null;
+  var can_discard = true;
+  if (player_id == game.player1_id) {
+    melds = game.melds1;
+    hand = game.hand1;
+  } else {
+    melds = game.melds2;
+    hand = game.hand2;
+  }
+
+  for (i = 0; i < melds.length; i++) {
+    for (j = 0; j < melds[i].length; j++) {
+      var meld_values = cardID_to_hand(hand, melds[i]);
+      // Card is in meld or doesn't exist, can't discard
+      // Cards melded turn to 0 in the hand, so we check to make sure
+      // they aren't trying to discard nothing
+      if (hand[index] < 1) {
+        can_discard = false;
+        break;
+      }
     }
+  }
 
-
-    for(i=0; i < melds.length; i++){
-        for(j=0; j < melds[i].length; j++){
-            var meld_values = cardID_to_hand(hand, melds[i])
-            // Card is in meld or doesn't exist, can't discard
-                // Cards melded turn to 0 in the hand, so we check to make sure
-                // they aren't trying to discard nothing
-            if (hand[index] < 1){ 
-                can_discard = false
-                break
-            }
-        }
+  if (can_discard == true) {
+    await Games.discard_facedown(game, player_id, index);
+    var game2 = await Games.get_game_by_id(game_id);
+    await emit_discard_update(io, game_id, 0);
+    var hand = game2.hand1;
+    if (player_id == game.player2_id) {
+      hand = game2.hand2;
     }
-
-    if(can_discard == true){
-        await Games.discard_facedown(game, player_id, index)
-        var game2 = await Games.get_game_by_id(game_id)
-        await emit_discard_update(io, game_id, 0)
-        var hand = game2.hand1
-        if(player_id == game.player2_id){
-            hand = game2.hand2
-        }
-        await emit_hand_update(io, game_id, player_id, hand)
-        console.log("Turn is ", game.turn_progress)
-        // Player discarded facedown for their knock. Opponent must form melds now
-        await swap_turn(game, io)
-        response.send()
-        response.status(200)
-        
-
-    }else{
-        emit_error_message(io, player_id, `/games/${game_id}/${player_id}`, "Cannot discard card from meld")
-        response.send()
-        response.status(403)
-    }
-
-
-}
+    await emit_hand_update(io, game_id, player_id, hand);
+    console.log('Turn is ', game.turn_progress);
+    // Player discarded facedown for their knock. Opponent must form melds now
+    await swap_turn(game, io);
+    response.send();
+    response.status(200);
+  } else {
+    emit_error_message(
+      io,
+      player_id,
+      `/games/${game_id}/${player_id}`,
+      'Cannot discard card from meld'
+    );
+    response.send();
+    response.status(403);
+  }
+};
 
 // Emits to player what meld they just made
-    // Melds are client-side until send with knock, so they can refresh
-    // themselves by checking chat
+// Melds are client-side until send with knock, so they can refresh
+// themselves by checking chat
 router.post('/:id/meld', async (request, response, next) => {
-    const io = request.app.get('io');
-    const game_id = request.params.id;
-    const player = request.session.user_id;
-    const melds = request.body.string;
-  
-    const message = "Indexes in melds: \n" + melds
-    const location = `/games/${game_id}/${player}`;
+  const io = request.app.get('io');
+  const game_id = request.params.id;
+  const player = request.session.user_id;
+  const melds = request.body.string;
 
-    await emit_notice(io, location, message)
+  const message = 'Indexes in melds: \n' + melds;
+  const location = `/games/${game_id}/${player}`;
 
-    response.send()
-    response.status(200)
+  await emit_notice(io, location, message);
 
-})
+  response.send();
+  response.status(200);
+});
 
 // Check if allowed to meld, check for valid meld
 router.post('/:id/knock', async (request, response, next) => {
@@ -484,14 +483,14 @@ router.post('/:id/knock', async (request, response, next) => {
   const player = request.session.user_id;
   var melds = request.body.melds;
   var game = await Games.get_game_by_id(game_id);
-  var hand_after = null
-  var melds_to_save = null
+  var hand_after = null;
+  var melds_to_save = null;
 
-//console.log("Melds are currently", game.melds1, " and ", game.melds2)
-//console.log("Melds are currently", game.melds2[0], game.melds2[0][1])
+  //console.log("Melds are currently", game.melds1, " and ", game.melds2)
+  //console.log("Melds are currently", game.melds2[0], game.melds2[0][1])
 
   if (is_valid_access(game, player) == false) {
-    await emit_unselect_melds(io, game_id, player)
+    await emit_unselect_melds(io, game_id, player);
 
     response.send();
 
@@ -499,133 +498,155 @@ router.post('/:id/knock', async (request, response, next) => {
     return null;
   }
 
-  if(game.turn_progress != TurnProgress.Middle && game.turn_progress != TurnProgress.OpponentKnock){
+  if (
+    game.turn_progress != TurnProgress.Middle &&
+    game.turn_progress != TurnProgress.OpponentKnock
+  ) {
     const location = `/games/${game_id}/${player}`;
     const message = 'Could not knock at this time';
-    await emit_meld_update(io, location, message)
-    await emit_unselect_melds(io, game_id, player)
+    await emit_meld_update(io, location, message);
+    await emit_unselect_melds(io, game_id, player);
 
     response.send();
 
     response.status(403);
-    return null
+    return null;
   }
 
-  var total_melded_cards = 0
+  var total_melded_cards = 0;
 
-  for(i=0; i < melds.length; i++){
-    for(j=0; j < melds[i].length; j++){
-        total_melded_cards = total_melded_cards + 1
+  for (i = 0; i < melds.length; i++) {
+    for (j = 0; j < melds[i].length; j++) {
+      total_melded_cards = total_melded_cards + 1;
     }
   }
 
-  if (total_melded_cards > 10){
+  if (total_melded_cards > 10) {
     const location = `/games/${game_id}/${player}`;
     const message = 'Cannot knock with more than 10 cards';
-    await emit_meld_update(io, location, message)
-    await emit_unselect_melds(io, game_id, player)
+    await emit_meld_update(io, location, message);
+    await emit_unselect_melds(io, game_id, player);
 
     response.send();
 
     response.status(403);
-    return null
+    return null;
   }
 
   const hand = await Games.get_hand_by_player(game_id, player);
-  hand_after = hand
-  var meld_success = (melds.length > 0)
+  hand_after = hand;
+  var meld_success = melds.length > 0;
 
-  console.log("Checking knock")
+  console.log('Checking knock');
   // Check all melds for validity
-  if(has_dupes(melds) == true){
+  if (has_dupes(melds) == true) {
     meld_success = false;
 
-  // Empty meld succeeds automatically if OpponentKnock or LayOff phase
-  }else if (melds.length == 0 && (game.turn_progress == TurnProgress.OpponentKnock || game.turn_progress == TurnProgress.LayOff)){
-    meld_success = true
-    console.log("Knock with empty hand allowed")
-  }
-  else{
-    for(var i=0; i < melds.length; i++){
-        meld_success = is_valid_meld(hand, melds[i])
-        if(meld_success == false){
-            break
-        }
+    // Empty meld succeeds automatically if OpponentKnock or LayOff phase
+  } else if (
+    melds.length == 0 &&
+    (game.turn_progress == TurnProgress.OpponentKnock ||
+      game.turn_progress == TurnProgress.LayOff)
+  ) {
+    meld_success = true;
+    console.log('Knock with empty hand allowed');
+  } else {
+    for (var i = 0; i < melds.length; i++) {
+      meld_success = is_valid_meld(hand, melds[i]);
+      if (meld_success == false) {
+        break;
+      }
     }
-    
-    if(meld_success == true){
-        var result = remaining_deadwood(hand, melds)
-        var deadwood = result[0]
-        hand_after = result[1]
-        melds_to_save = result[2]
-        // Deadwood must be less than 10 points
-            // If the non-Knocking player is melding here, they're allowed to have more deadwood
-        if(deadwood > 60 && game.TurnProgress != TurnProgress.OpponentKnock){ // TODO: Don't forget to set this back down to 10
-            const location = `/games/${game_id}/${player}`;
-            const message = `Deadwood was not less than 10 (${deadwood})`;
-            await emit_meld_update(io, location, message)
-            await emit_unselect_melds(io, game_id, player)
-    
-            response.send();
-    
-            response.status(200);
-            return null
-        }
-        
+
+    if (meld_success == true) {
+      var result = remaining_deadwood(hand, melds);
+      var deadwood = result[0];
+      hand_after = result[1];
+      melds_to_save = result[2];
+      // Deadwood must be less than 10 points
+      // If the non-Knocking player is melding here, they're allowed to have more deadwood
+      if (deadwood > 60 && game.TurnProgress != TurnProgress.OpponentKnock) {
+        // TODO: Don't forget to set this back down to 10
+        const location = `/games/${game_id}/${player}`;
+        const message = `Deadwood was not less than 10 (${deadwood})`;
+        await emit_meld_update(io, location, message);
+        await emit_unselect_melds(io, game_id, player);
+
+        response.send();
+
+        response.status(200);
+        return null;
+      }
     }
   }
 
   // Meld really succeeded, go into knock step
-  if (meld_success == true){
-    if (hand_after == null){
-        console.log("Hand after discarding was null")
-       // hand_after = 
+  if (meld_success == true) {
+    if (hand_after == null) {
+      console.log('Hand after discarding was null');
+      // hand_after =
     }
 
-    if(melds_to_save == null){
-        melds_to_save = []
+    if (melds_to_save == null) {
+      melds_to_save = [];
     }
-    console.log("Melds we're saving: ", melds_to_save)
+    console.log("Melds we're saving: ", melds_to_save);
 
-    await Games.save_meld(game, player, JSON.stringify(melds_to_save), hand_after)
-    await emit_hand_update(io, game_id, player, hand_after)
+    await Games.save_meld(
+      game,
+      player,
+      JSON.stringify(melds_to_save),
+      hand_after
+    );
+    await emit_hand_update(io, game_id, player, hand_after);
     // Update local variable with current gamestate
     game = await Games.get_game_by_id(game_id);
 
-   // var game2 = await Games.get_game_by_id(game_id);
+    // var game2 = await Games.get_game_by_id(game_id);
     //console.log("Melds are currently", game2.melds1, " and ", game2.melds2)
 
     // Handle case of non-Knocking player validating melds
-    if(game.turn_progress == TurnProgress.OpponentKnock){
-        const location = `/games/${game_id}/${player}`;
-        const message = `Melds ${request.session.username} formed!`;
-        await emit_meld_update(io, location, message)
-
-        // Reveal all cards and melds, then let the non-Knocking player lay off deadwood
-        await emit_reveal_all(io, game_id, game.player1_id, game.hand2, game.melds1, game.melds2)
-        await emit_reveal_all(io, game_id, game.player2_id, game.hand1, game.melds2, game.melds1)
-
-        await Games.set_turn_progress(game_id, TurnProgress.LayOff)
-    }else{
-        const location = `/games/${game_id}`;
-        const message = `Player ${request.session.username} knocked!`;
-        await emit_meld_update(io, location, message)
-        await Games.set_turn_progress(game_id, TurnProgress.StartKnock)
-    }
-    
-    }else{
+    if (game.turn_progress == TurnProgress.OpponentKnock) {
       const location = `/games/${game_id}/${player}`;
-      const message = 'Melds were not valid';
-      await emit_meld_update(io, location, message)
-    }
-  
+      const message = `Melds ${request.session.username} formed!`;
+      await emit_meld_update(io, location, message);
 
-  await emit_unselect_melds(io, game_id, player)
+      // Reveal all cards and melds, then let the non-Knocking player lay off deadwood
+      await emit_reveal_all(
+        io,
+        game_id,
+        game.player1_id,
+        game.hand2,
+        game.melds1,
+        game.melds2
+      );
+      await emit_reveal_all(
+        io,
+        game_id,
+        game.player2_id,
+        game.hand1,
+        game.melds2,
+        game.melds1
+      );
+
+      await Games.set_turn_progress(game_id, TurnProgress.LayOff);
+    } else {
+      const location = `/games/${game_id}`;
+      const message = `Player ${request.session.username} knocked!`;
+      await emit_meld_update(io, location, message);
+      await Games.set_turn_progress(game_id, TurnProgress.StartKnock);
+    }
+  } else {
+    const location = `/games/${game_id}/${player}`;
+    const message = 'Melds were not valid';
+    await emit_meld_update(io, location, message);
+  }
+
+  await emit_unselect_melds(io, game_id, player);
 
   response.send();
 
   response.status(200);
-  
 });
 
 const is_valid_meld = (hand, meld) => {
@@ -634,75 +655,76 @@ const is_valid_meld = (hand, meld) => {
     return false;
   }
 
-  if(has_zeroes(meldID)){
-    return false
-  }
-
-  if (!is_Ascending_Num(meldID) && !is_Descending_num(meldID) && !is_Same_Card_Different_Suite(meldID)) {
+  if (has_zeroes(meldID)) {
     return false;
   }
 
- 
+  if (
+    !is_Ascending_Num(meldID) &&
+    !is_Descending_num(meldID) &&
+    !is_Same_Card_Different_Suite(meldID)
+  ) {
+    return false;
+  }
+
   return true;
 };
 
-const has_zeroes = (meld) =>{
-    for(var i=0; i < meld.length; i++){
-        console.log("Check ", meld[i])
-        if (meld[i] == 0){
-            console.log("Meld had blank")
-            return true
-        }
+const has_zeroes = (meld) => {
+  for (var i = 0; i < meld.length; i++) {
+    console.log('Check ', meld[i]);
+    if (meld[i] == 0) {
+      console.log('Meld had blank');
+      return true;
     }
-    
-    return false
-}
+  }
 
-const has_dupes = (melds) =>{
-    var nums = []
-    for(i=0; i < melds.length; i++){
-        for(j=0; j < melds[i].length; j++){
-            for(k=0; k < nums.length; k++){
-                if (nums[k] == melds[i][j]){
-                    return true
-                }
-            }
-            nums.push(melds[i][j])
+  return false;
+};
 
+const has_dupes = (melds) => {
+  var nums = [];
+  for (i = 0; i < melds.length; i++) {
+    for (j = 0; j < melds[i].length; j++) {
+      for (k = 0; k < nums.length; k++) {
+        if (nums[k] == melds[i][j]) {
+          return true;
         }
+      }
+      nums.push(melds[i][j]);
     }
+  }
 
-    return false
-}
+  return false;
+};
 
 // Check which cards are not in melds
 // Add value of those cards and return it and the new hand in array
 // Also returns new set of melds that match card value
-const remaining_deadwood = (hand, melds_index) =>{
-    var melds = []
-    for(i=0; i < melds_index.length; i++){
-        melds.push(cardID_to_hand(hand, melds_index[i]))
-    }
-    var hand_copy = hand
-    var deadwood = 0
+const remaining_deadwood = (hand, melds_index) => {
+  var melds = [];
+  for (i = 0; i < melds_index.length; i++) {
+    melds.push(cardID_to_hand(hand, melds_index[i]));
+  }
+  var hand_copy = hand;
+  var deadwood = 0;
 
-    for(i=0; i < melds.length; i++){
-        for(j=0; j < melds[i].length; j++){
-            for(k=0; k < hand_copy.length; k++){
-                if (hand_copy[k] == melds[i][j]){
-                    hand_copy[k] = 0
-                }
-            }
-
+  for (i = 0; i < melds.length; i++) {
+    for (j = 0; j < melds[i].length; j++) {
+      for (k = 0; k < hand_copy.length; k++) {
+        if (hand_copy[k] == melds[i][j]) {
+          hand_copy[k] = 0;
         }
+      }
     }
+  }
 
-    for(i=0; i < hand_copy.length; i++){
-        deadwood = deadwood + Math.min((hand_copy[i] % 13), 10)
-    }
+  for (i = 0; i < hand_copy.length; i++) {
+    deadwood = deadwood + Math.min(hand_copy[i] % 13, 10);
+  }
 
-    return [deadwood, hand_copy, melds]
-}
+  return [deadwood, hand_copy, melds];
+};
 
 const cardID_to_hand = (hand, meld) => {
   const meldArray = meld.map((index) => hand[index]);
@@ -712,62 +734,62 @@ const is_Enough_Meld = (meld) => {
   if (meld.length >= 3 && meld.length <= 10) {
     return true;
   } else {
-    console.log("Meld too small")
+    console.log('Meld too small');
     return false;
   }
 };
 // Ascending if value at i is value at i-1 +1
-    // Previous value+1 = value, and previous value is not % 13 = 0
-        // % 13 = 0 is a king, and nothing comes after 
-    // Must be same suit, so also fail if some i > 0 comes to be ace
+// Previous value+1 = value, and previous value is not % 13 = 0
+// % 13 = 0 is a king, and nothing comes after
+// Must be same suit, so also fail if some i > 0 comes to be ace
 const is_Ascending_Num = (meld) => {
   for (let i = 1; i < meld.length; i++) {
     if (meld[i] % 13 == 1 || meld[i] !== meld[i - 1] + 1) {
-        console.log("Meld not ascending")
+      console.log('Meld not ascending');
       return false;
     }
   }
 
-  console.log("Meld ascending")
+  console.log('Meld ascending');
   return true;
 };
 
-const is_Descending_num = (meld) =>{
-    for (let i = 1; i < meld.length; i++) {
-        if (meld[i] % 13 == 0 || meld[i] !== meld[i - 1] - 1) {
-            console.log("Meld not descending")
-          return false;
-        }
-      }
+const is_Descending_num = (meld) => {
+  for (let i = 1; i < meld.length; i++) {
+    if (meld[i] % 13 == 0 || meld[i] !== meld[i - 1] - 1) {
+      console.log('Meld not descending');
+      return false;
+    }
+  }
 
-      console.log("Meld descending")
-      return true;
-}
+  console.log('Meld descending');
+  return true;
+};
 const is_Same_Suite = (meld) => {
   for (let i = 1; i < meld.length; i++) {
     if (meld[i] !== meld[0]) {
-        console.log("Not same suite?")
+      console.log('Not same suite?');
       return false; // Found a different number, not all numbers are the same
     }
   }
 
-  console.log("Same suite")
+  console.log('Same suite');
   return true;
 };
 
-const is_Same_Card_Different_Suite = (meld) =>{
-    for (let i = 1; i < meld.length; i++) {
-        console.log(meld[i], meld[i-1])
-      if(meld[i] % 13 != meld[i-1] % 13){
-        console.log("Not same card")
+const is_Same_Card_Different_Suite = (meld) => {
+  for (let i = 1; i < meld.length; i++) {
+    console.log(meld[i], meld[i - 1]);
+    if (meld[i] % 13 != meld[i - 1] % 13) {
+      console.log('Not same card');
 
-        return false
-      }
+      return false;
     }
+  }
 
-    console.log("Same card different suite")
-    return true
-}
+  console.log('Same card different suite');
+  return true;
+};
 // Returns true if:
 // Game exists
 // Game is not complete
@@ -810,7 +832,7 @@ const emit_hand_update = async (io, game_id, player, hand) => {
 const emit_meld_update = async (io, location, message) => {
   console.log('Emitting ', message);
   const username = 'SYSTEM';
-  const timestamp = "";
+  const timestamp = '';
 
   io.to(location).emit('chat-message-received', {
     message,
@@ -820,26 +842,33 @@ const emit_meld_update = async (io, location, message) => {
 };
 
 const emit_unselect_melds = async (io, game_id, player) => {
-    console.log("Emit unselect melds")
-    io.to(`/games/${game_id}/${player}`).emit('unselect-melds')
-}
+  console.log('Emit unselect melds');
+  io.to(`/games/${game_id}/${player}`).emit('unselect-melds');
+};
 
-const emit_reveal_all = async(io, game_id, player, opponent_hand, player_meld, opponent_meld) =>{
-    console.log("Emit reveal all")
-    console.log("Hand: ", opponent_hand)
-    console.log("Player meld: ", player_meld)
-    console.log("Opponent_meld: ", opponent_meld)
-    io.to(`/games/${game_id}/${player}`).emit('reveal-cards', {
-        opponent_hand,
-        player_meld,
-        opponent_meld,
-    })
-}
+const emit_reveal_all = async (
+  io,
+  game_id,
+  player,
+  opponent_hand,
+  player_meld,
+  opponent_meld
+) => {
+  console.log('Emit reveal all');
+  console.log('Hand: ', opponent_hand);
+  console.log('Player meld: ', player_meld);
+  console.log('Opponent_meld: ', opponent_meld);
+  io.to(`/games/${game_id}/${player}`).emit('reveal-cards', {
+    opponent_hand,
+    player_meld,
+    opponent_meld,
+  });
+};
 
 const emit_error_message = async (io, player, location, message) => {
   console.log('Emitting ', message);
   const username = '!!ERROR!!';
-  const timestamp = "";
+  const timestamp = '';
 
   io.to(location).emit('chat-message-received', {
     message,
@@ -849,15 +878,15 @@ const emit_error_message = async (io, player, location, message) => {
 };
 
 const emit_notice = async (io, location, message) => {
-    console.log('Emitting ', message);
-    const username = 'NOTICE: ';
-    const timestamp = ""
+  console.log('Emitting ', message);
+  const username = 'NOTICE: ';
+  const timestamp = '';
 
-    io.to(location).emit('chat-message-received', {
-        message,
-        username,
-        timestamp,
-    });
+  io.to(location).emit('chat-message-received', {
+    message,
+    username,
+    timestamp,
+  });
 };
 
 module.exports = router;

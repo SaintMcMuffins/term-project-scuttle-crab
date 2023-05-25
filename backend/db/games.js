@@ -435,38 +435,39 @@ const set_turn_progress = async (game_id, progress) => {
   ]);
 };
 
-const save_meld = async(game, player_id, melds, new_hand) =>{
-  if (player_id == game.player1_id){
-    await db.none(
-        `UPDATE games SET melds1=$1, hand1=$2 WHERE game_id=$3`,
-        [melds, new_hand, game.game_id]
-    )
-  }else{
-    await db.none(
-        `UPDATE games SET melds2=$1, hand2=$2 WHERE game_id=$3`,
-        [melds, new_hand, game.game_id]
-    )
+const save_meld = async (game, player_id, melds, new_hand) => {
+  if (player_id == game.player1_id) {
+    await db.none(`UPDATE games SET melds1=$1, hand1=$2 WHERE game_id=$3`, [
+      melds,
+      new_hand,
+      game.game_id,
+    ]);
+  } else {
+    await db.none(`UPDATE games SET melds2=$1, hand2=$2 WHERE game_id=$3`, [
+      melds,
+      new_hand,
+      game.game_id,
+    ]);
   }
-}
+};
 
-const discard_facedown = async(game, player_id, index) =>{
-    if(player_id == game.player1_id){
-        var hand = game.hand1
-        hand[index] = 0
-        await db.none(
-            `UPDATE games SET discard_index=$1, hand1=$2 WHERE game_id=$3`,
-            [0, hand, game.game_id]
-        )
-    }else{
-        var hand = game.hand2
-        hand[index] = 0
-        await db.none(
-            `UPDATE games SET discard_index=$1, hand2=$2 WHERE game_id=$3`,
-            [0, hand, game.game_id]
-        )
-    }
-    
-}
+const discard_facedown = async (game, player_id, index) => {
+  if (player_id == game.player1_id) {
+    var hand = game.hand1;
+    hand[index] = 0;
+    await db.none(
+      `UPDATE games SET discard_index=$1, hand1=$2 WHERE game_id=$3`,
+      [0, hand, game.game_id]
+    );
+  } else {
+    var hand = game.hand2;
+    hand[index] = 0;
+    await db.none(
+      `UPDATE games SET discard_index=$1, hand2=$2 WHERE game_id=$3`,
+      [0, hand, game.game_id]
+    );
+  }
+};
 
 module.exports = {
   createGameSQL,
@@ -493,5 +494,5 @@ module.exports = {
   set_turn_progress,
   start_new_turn,
   save_meld,
-  discard_facedown
+  discard_facedown,
 };

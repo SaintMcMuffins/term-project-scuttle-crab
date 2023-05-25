@@ -29,7 +29,7 @@
 }
 
 .p1-item.melded {
-  box-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14, 0 0 30px #39FF14;
+  box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 30px #39ff14;
 }
 
 .game-container {
@@ -45,12 +45,12 @@
 }
 
 .p2-meld-item {
-    border-radius: 10px;
-    grid-row: 2 / 3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  border-radius: 10px;
+  grid-row: 2 / 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .p1-item {
   border-radius: 10px;
@@ -61,28 +61,28 @@
 }
 
 .blank2 {
-    border-radius: 10px;
-    grid-row: 2 / 3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  border-radius: 10px;
+  grid-row: 2 / 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .p1-meld-item {
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    grid-row: 4 / 5;
-  }
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-row: 4 / 5;
+}
 
-  .blank1 {
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    grid-row: 4 / 5;
-  }
+.blank1 {
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-row: 4 / 5;
+}
 
 .pile {
   border-radius: 10px;
@@ -91,15 +91,15 @@
 }
 
 .pile:hover {
-    box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
-  }
+  box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+}
 
 .player-turn-indicator {
   grid-area: 3 / 5 / 3 / 5;
   margin: auto;
   font-family: Inter-Bold;
   font-size: 15px;
-  }
+}
 .ui-area {
   grid-area: 3 / 2 / 4 / 3;
   padding: 30px;
@@ -213,8 +213,6 @@ button:hover i::after {
   left: 80%;
   animation: move 3s infinite;
 }
-
-
 
 @keyframes move {
   0% {
