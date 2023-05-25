@@ -79,7 +79,6 @@ router.get('/:id', async (request, response, next) => {
       (game.player2_id != null && game.player2_id == request.session.user_id)
     ) {
       // Player only needs to know and show their hand if not final phase of game
-      // TODO: Check if opposite player has knocked. Will need to show
       var player_hand = [];
       var other_hand = [];
       var player_melds = [];
@@ -794,8 +793,7 @@ router.post('/:id/knock', async (request, response, next) => {
       melds_to_save = result[2];
       // Deadwood must be less than 10 points
       // If the non-Knocking player is melding here, they're allowed to have more deadwood
-      if (deadwood > 60 && game.TurnProgress != TurnProgress.OpponentKnock) {
-        // TODO: Don't forget to set this back down to 10
+      if (deadwood > 10 && game.TurnProgress != TurnProgress.OpponentKnock) {
         const location = `/games/${game_id}/${player}`;
         const message = `Deadwood was not less than 10 (${deadwood})`;
         await emit_meld_update(io, location, message);
