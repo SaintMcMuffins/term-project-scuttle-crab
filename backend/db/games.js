@@ -483,6 +483,13 @@ const discard_facedown = async (game, player_id, index) => {
   }
 };
 
+const set_complete = async(game_id, points) =>{
+    await db.none(
+        `UPDATE games SET complete=$1, points=$2 WHERE game_id=$3`,
+        [true, points, game_id]
+    );
+}
+
 module.exports = {
   createGameSQL,
   insertFirstUserSQL,
@@ -510,4 +517,5 @@ module.exports = {
   save_meld,
   save_hand,
   discard_facedown,
+  set_complete,
 };
