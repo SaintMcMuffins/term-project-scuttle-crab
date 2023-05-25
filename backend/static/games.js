@@ -14,7 +14,7 @@ const Games = require('../db/games.js');
 // OppositeMustDraw is first turn only. Player must draw from deck.
 // StartKnock starts when knock validates. Player can discard to end turn and move to OpponentKnock
 // OpponentKnock starts when player discards on their StartKnock. Can knock with any deadwood
-// LayOff starts after player valid knocks in OpponentKnock. Player can meld hand with opponent melds. End on valid knock
+// LayOff starts after player valid knocks in OpponentKnock. Player can meld hand with opponent melds. End game on valid knock
 // For OpponentKnock and LayOff, empty knock is valid
 const TurnProgress = {
   OppositeDraw: -3,
@@ -25,6 +25,7 @@ const TurnProgress = {
   StartKnock: 2,
   OpponentKnock: 3,
   LayOff: 4,
+  GameOver: 5.
 };
 
 router.post('/:id/start', async (request, response, next) => {
@@ -70,7 +71,7 @@ router.get('/:id', async (request, response, next) => {
   console.log('In get for game id', game_id);
   const game = await Games.get_game_by_id(game_id);
 
-  if (game != null && request.session.user_id != null && game.turn != -1) {
+  if (game != null && request.session.user_id != null && game.turn != -1 && game.complete != true) {
     var player1_name = await Games.player1_of_game_id(request.params.id);
     var player2_name = await Games.player2_of_game_id(request.params.id);
     if (
@@ -166,7 +167,7 @@ router.post('/:id/end_turn', async (request, response, next) => {
 
   if (!is_valid_access(game, player)) {
     response.send();
-
+    console.log("Invalid access")
     response.status(403);
     return null;
   }
@@ -476,6 +477,84 @@ router.post('/:id/meld', async (request, response, next) => {
   response.status(200);
 });
 
+// Returns total points in hand
+const points_in_hand = (hand) =>{
+    var points = 0
+    for(i = 0; i < hand.length; i++){
+        points = points + Math.min(hand[i] % 13, 10)
+    }
+
+    return points
+}
+
+// Counts total points of cards in each player's hands
+// Knocking player gets points based on difference
+// If non-Knocking has less points in hand, they get those points+10 instead
+// Broadcast winner based on this, then prevent further action in this game
+const finish_game = async(io, response, game_id, game) =>{
+    // Knocker is player whose turn it isn't right now
+    var knocker = game.player1_id
+    if(game.turn != game.player2_id){
+        knocker = game.player2_id
+        console.log("Player 2 was knocker")
+    }
+
+    var points1 = points_in_hand(game.hand1)
+    var points2 = points_in_hand(game.hand2)
+    var final_points = 0
+    var winner = null
+    // If knocker is player1, then give win to P2 if P2 has more points
+    // Else, reverse
+    if(knocker == game.player1_id){
+        if (points2 < points1){
+            final_points = points1-points2 + 10
+            if(points2 == 0){
+                final_points = final_points + 25 // No deadwood, going gin
+            }
+            winner = game.player2_id
+        }else{
+            final_points = points2-points1
+            if(points1 == 0){
+                final_points = final_points + 25 // No deadwood, going gin
+            }
+            winner = game.player1_id
+        }
+    }else{
+        if(points1 < points2){
+            final_points = points2-points1 + 10
+            if(points1 == 0){
+                final_points = final_points + 25 // No deadwood, going gin
+            }
+            winner = game.player1_id
+        }else{
+            final_points = points1-points2
+            if(points2 == 0){
+                final_points = final_points + 25 // No deadwood, going gin
+            }
+            winner = game.player2_id
+        }
+    }
+
+    const location = `/games/${game_id}`
+    var winner_name = ""
+    if (winner == game.player1_id){
+        winner_name = (await Games.player1_of_game_id(game_id)).username
+
+    }else{
+        winner_name = (await Games.player2_of_game_id(game_id)).username
+
+    }
+
+    const message = `${winner_name} wins with ${final_points} points!`
+
+    await Games.set_turn_progress(game_id, TurnProgress.GameOver)
+    await Games.set_complete(game_id, final_points)
+    await emit_notice(io, location, message)
+    await emit_game_over(io, location, winner_name, final_points)
+}
+
+
+
 // For lay off knock, success if:
     // Meld has one opponent meld in it, denoted by negative index
         // Negative index transformed, so must math.abs(index)-1 to get original
@@ -597,8 +676,12 @@ const lay_off_knock = async(io, response, player, game_id, game, melds) =>{
         
         await emit_unselect_melds(io, game_id, player);
 
+        console.log("We made it!")
+        finish_game(io, response, game_id, game)
+        
         response.send();
         response.status(200);
+        return true
     }else{
       await emit_unselect_melds(io, game_id, player);
       response.send();
@@ -607,7 +690,6 @@ const lay_off_knock = async(io, response, player, game_id, game, melds) =>{
       return false
     }
     
-    console.log("Did we make it?", meld_success)
 }
 
 // Check if allowed to meld, check for valid meld
@@ -635,6 +717,7 @@ router.post('/:id/knock', async (request, response, next) => {
   // If Lay Off, need special handling
   // Check valid. If valid, handle end of game
   if(game.turn_progress == TurnProgress.LayOff && melds.length > 0){
+    console.log("Doing lay off knock")
     return await lay_off_knock(io, response, player, game_id, game, melds)
   }
 
@@ -692,7 +775,10 @@ router.post('/:id/knock', async (request, response, next) => {
     meld_success = true;
     console.log('Knock with empty hand allowed');
 
-    // TODO: End the game here
+    // Empty hand counts as a finish game move when in Lay Off phase
+    if(game.turn_progress == TurnProgress.LayOff){
+        return await finish_game(io, response, game_id, game)
+    }
   } else {
     for (var i = 0; i < melds.length; i++) {
       meld_success = is_valid_meld(hand, melds[i]);
@@ -943,7 +1029,7 @@ const is_Same_Card_Different_Suite = (meld) => {
 // Player is in game, it is the player's turn, and the game is started
 // These three are the same check, since turn = some player_id if game is started
 const is_valid_access = (game, player_id) => {
-  return game != null && game.completed != false && game.turn == player_id;
+  return game != null && game.complete != true && game.turn == player_id;
 };
 
 // Get name of player whose turn it will be, emit to players in game
@@ -1042,5 +1128,14 @@ const emit_notice = async (io, location, message) => {
     timestamp,
   });
 };
+
+const emit_game_over = async(io, location, winner, final_points) =>{
+    console.log("Emitting game over")
+    io.to(location).emit('game-over', {
+        winner,
+        final_points,
+      });
+}
+
 
 module.exports = router;

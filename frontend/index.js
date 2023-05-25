@@ -68,6 +68,12 @@ socket.on('update-turn', ({ player, is_passable_turn }) => {
 
 });
 
+socket.on('game-over', ({ winner, final_points }) => {
+    var playerElement = document.querySelector('.player-turn-indicator');
+    playerElement.innerHTML = winner + " wins! " + final_points + " points";
+  
+  });
+
 socket.on('update-discard-pile', ({ discard_top }) => {
   var discardPileElement = document.getElementsByClassName("pile")[0];
   discardPileElement.id = 'card' + discard_top; // update top card id
@@ -350,6 +356,7 @@ socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
         for(var j = 0; j < opponent_meld[i].length; j++){
             var card = document.createElement('div');
             card.classList.add("p2-meld-item")
+            card.classList.add(i.toString())
             card.id = "card" + opponent_meld[i][j]
             card_area.appendChild(card)
         }
