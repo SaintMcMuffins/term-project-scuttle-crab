@@ -52,6 +52,16 @@ socket.on('update-hand', ({ hand }) => {
   }
 });
 
+socket.on('update-other-hand', ({ hand }) => {
+    var handElement = document.getElementsByClassName('p2-item');
+    for (var i = 0; i < handElement.length; i++) {
+      var cardElement = handElement[i];
+      if (i < hand.length) {
+        cardElement.id = 'card' + hand[i]; // update card id
+      }
+    }
+});
+
 socket.on('update-turn', ({ player, is_passable_turn }) => {
   var playerElement = document.querySelector('.player-turn-indicator');
   playerElement.innerHTML = player + "'s turn!";
@@ -351,6 +361,7 @@ socket.on("reveal-cards", (opponent_hand, player_meld, opponent_meld) =>{
 
     // Now that divs exist, set onClick events
     opponent_melds = document.getElementsByClassName("p2-meld-item")
+    console.log("Got the melds now, ", opponent_melds)
     set_meld_interactions()
 
 })

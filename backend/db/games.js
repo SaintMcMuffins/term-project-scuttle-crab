@@ -451,6 +451,20 @@ const save_meld = async (game, player_id, melds, new_hand) => {
   }
 };
 
+const save_hand = async(game, player_id, new_hand) => {
+    if (player_id == game.player1_id) {
+        await db.none(`UPDATE games SET hand1=$1 WHERE game_id=$2`, [
+          new_hand,
+          game.game_id,
+        ]);
+    } else {
+        await db.none(`UPDATE games SET hand2=$1 WHERE game_id=$2`, [
+            new_hand,
+            game.game_id,
+        ]);
+    }
+}
+
 const discard_facedown = async (game, player_id, index) => {
   if (player_id == game.player1_id) {
     var hand = game.hand1;
@@ -494,5 +508,6 @@ module.exports = {
   set_turn_progress,
   start_new_turn,
   save_meld,
+  save_hand,
   discard_facedown,
 };

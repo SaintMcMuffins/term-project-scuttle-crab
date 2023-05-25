@@ -476,6 +476,140 @@ router.post('/:id/meld', async (request, response, next) => {
   response.status(200);
 });
 
+// For lay off knock, success if:
+    // Meld has one opponent meld in it, denoted by negative index
+        // Negative index transformed, so must math.abs(index)-1 to get original
+    // Meld has at least one player card in it (at least one number >= 0)
+    // Meld passes normal knock validation
+// End the game if success
+const lay_off_knock = async(io, response, player, game_id, game, melds) =>{
+    // Input melds have -X included. Convert -X to melds of index X-1 and save here
+    var converted_melds = [] 
+    var hand = game.hand1
+    if(player == game.player2_id){
+        hand = game.hand2
+    }
+
+    console.log("Lay off knock with ", melds)
+    try{
+        var had_opponent_meld = false
+        for(i=0; i < melds.length; i++){
+            var current_meld = []
+            for(j=0; j < melds[i].length; j++){
+                // Found meld indicator, resolve
+                if (melds[i][j] < 0){
+                    had_opponent_meld = true
+                    var meld_index = Math.abs(melds[i][j])-1
+    
+    
+                    // Get cards from the meld
+                    var meld_cards = game.melds2
+                    if(player == game.player2_id){
+                        meld_cards = game.melds1
+                    }
+    
+                    // Fail if index out of bounds
+                    if (meld_index > meld_cards.length-1){
+                        console.log("Index out of bounds")
+                        await emit_unselect_melds(io, game_id, player);
+                        response.send();
+                        response.status(403);
+                        
+                        return false
+                    }
+    
+                    // Get specific meld
+                    meld_cards = meld_cards[meld_index]
+    
+                    // Add meld data to current_meld
+                    for(k=0; k < meld_cards.length; k++){
+                        current_meld.push(meld_cards[k])
+                    }
+                }else{
+                    current_meld.push(hand[melds[i][j]])
+                }
+            }
+            
+            // Meld did not contain opponent meld. Fail
+            if(had_opponent_meld == false){
+                console.log("Didn't find opponent meld")
+                await emit_unselect_melds(io, game_id, player);
+                response.send();
+                response.status(403);
+                
+                return false
+            }
+    
+            converted_melds.push(current_meld)
+            had_opponent_meld = false
+        }
+    }catch{ // Expect index out of bounds
+      await emit_unselect_melds(io, game_id, player);
+      response.send();
+      response.status(403);
+      
+      return false
+    }
+
+    console.log("That gets us ", converted_melds)
+
+    // Now have set of melds, validate
+    var meld_success = true;
+
+    console.log('Checking knock');
+    // Make sure no dupes
+    if (has_dupes(converted_melds) == true) {
+      meld_success = false;
+
+      await emit_unselect_melds(io, game_id, player);
+      response.send();
+      response.status(403);
+    
+    }else {
+        // Check each of our converted list for validity
+        for (var i = 0; i < converted_melds.length; i++) {
+          meld_success = is_valid_meld(hand, converted_melds[i], game.turn_progress == TurnProgress.LayOff);
+          if (meld_success == false) {
+            break;
+          }
+        }
+
+        
+    }
+
+    // Remove laid off cards from hand, end game
+    if(meld_success == true){
+        for(i=0; i < melds.length; i++){
+            for(j=0; j < melds[i].length; j++){
+                if (melds[i][j] > -1){
+                    hand[melds[i][j]] = 0
+                }
+            }
+        }
+        await Games.save_hand(game, player, hand)
+        if (player == game.player1_id){
+            await emit_hand_update(io, game_id, game.player1_id, hand)
+            await emit_other_hand_update(io, game_id, game.player2_id, hand)
+        }else{
+            await emit_other_hand_update(io, game_id, game.player1_id, hand)
+            await emit_hand_update(io, game_id, game.player2_id, hand)
+        }
+        
+        await emit_unselect_melds(io, game_id, player);
+
+        response.send();
+        response.status(200);
+    }else{
+      await emit_unselect_melds(io, game_id, player);
+      response.send();
+      response.status(403);
+      
+      return false
+    }
+    
+    console.log("Did we make it?", meld_success)
+}
+
 // Check if allowed to meld, check for valid meld
 router.post('/:id/knock', async (request, response, next) => {
   const io = request.app.get('io');
@@ -498,9 +632,16 @@ router.post('/:id/knock', async (request, response, next) => {
     return null;
   }
 
+  // If Lay Off, need special handling
+  // Check valid. If valid, handle end of game
+  if(game.turn_progress == TurnProgress.LayOff && melds.length > 0){
+    return await lay_off_knock(io, response, player, game_id, game, melds)
+  }
+
   if (
     game.turn_progress != TurnProgress.Middle &&
-    game.turn_progress != TurnProgress.OpponentKnock
+    game.turn_progress != TurnProgress.OpponentKnock &&
+    game.turn_progress != TurnProgress.LayOff // Allow LayOff check here so empty is valid
   ) {
     const location = `/games/${game_id}/${player}`;
     const message = 'Could not knock at this time';
@@ -550,6 +691,8 @@ router.post('/:id/knock', async (request, response, next) => {
   ) {
     meld_success = true;
     console.log('Knock with empty hand allowed');
+
+    // TODO: End the game here
   } else {
     for (var i = 0; i < melds.length; i++) {
       meld_success = is_valid_meld(hand, melds[i]);
@@ -649,8 +792,12 @@ router.post('/:id/knock', async (request, response, next) => {
   response.status(200);
 });
 
-const is_valid_meld = (hand, meld) => {
-  const meldID = cardID_to_hand(hand, meld);
+const is_valid_meld = (hand, meld, from_lay_off) => {
+  var meldID = meld
+  if(from_lay_off == false || from_lay_off == null){
+    meldID = cardID_to_hand(hand, meld);
+
+  }
   if (!is_Enough_Meld(meldID)) {
     return false;
   }
@@ -829,6 +976,13 @@ const emit_hand_update = async (io, game_id, player, hand) => {
     hand,
   });
 };
+
+const emit_other_hand_update = async (io, game_id, player, hand) => {
+    io.to(`/games/${game_id}/${player}`).emit('update-other-hand', {
+      hand,
+    });
+  };
+
 const emit_meld_update = async (io, location, message) => {
   console.log('Emitting ', message);
   const username = 'SYSTEM';
