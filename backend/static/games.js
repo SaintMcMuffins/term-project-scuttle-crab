@@ -16,6 +16,7 @@ const Games = require('../db/games.js');
 // OpponentKnock starts when player discards on their StartKnock. Can knock with any deadwood
 // LayOff starts after player valid knocks in OpponentKnock. Player can meld hand with opponent melds. End game on valid knock
 // For OpponentKnock and LayOff, empty knock is valid
+// For GameOver, players can't do any valid moves
 const TurnProgress = {
   OppositeDraw: -3,
   DealerDraw: -2,
@@ -28,6 +29,7 @@ const TurnProgress = {
   GameOver: 5.
 };
 
+// Try to start the game. Redirects players to game if both players in game exist
 router.post('/:id/start', async (request, response, next) => {
   const io = request.app.get('io');
   const game_id = request.params.id;
@@ -191,6 +193,7 @@ router.post('/:id/end_turn', async (request, response, next) => {
   }
 });
 
+// Swap player turns and set new turn progress
 const swap_turn = async (game, io) => {
   const p1 = game.player1_id;
   const p2 = game.player2_id;
@@ -242,6 +245,7 @@ router.post('/:id/draw_deck', async (request, response, next) => {
     return null;
   }
 
+  // If they can draw deck now, let them and update player with new hand
   if (
     game.turn_progress == TurnProgress.Draw ||
     game.turn_progress == TurnProgress.OppositeMustDraw
@@ -284,6 +288,7 @@ router.post('/:id/draw_discard', async (request, response, next) => {
   }
 
   console.log('In draw discard with ', game.turn_progress);
+  // Check that they can actually draw right now - turn progress, and pile not empty
   if (
     game.discard_index != 0 &&
     (game.turn_progress == TurnProgress.Draw ||
@@ -876,6 +881,9 @@ router.post('/:id/knock', async (request, response, next) => {
   response.status(200);
 });
 
+// Valid meld if there are enough cards to meld, and the set 
+// either ascends, descends, or is X of a kind
+// If checking validity from_lay_off, we don't need to match index and IDs
 const is_valid_meld = (hand, meld, from_lay_off) => {
   var meldID = meld
   if(from_lay_off == false || from_lay_off == null){
@@ -901,6 +909,7 @@ const is_valid_meld = (hand, meld, from_lay_off) => {
   return true;
 };
 
+// Returns true if meld includes a blank card
 const has_zeroes = (meld) => {
   for (var i = 0; i < meld.length; i++) {
     console.log('Check ', meld[i]);
@@ -913,6 +922,7 @@ const has_zeroes = (meld) => {
   return false;
 };
 
+// Returns true if group of melds has a duplicate index between them
 const has_dupes = (melds) => {
   var nums = [];
   for (i = 0; i < melds.length; i++) {
@@ -957,10 +967,13 @@ const remaining_deadwood = (hand, melds_index) => {
   return [deadwood, hand_copy, melds];
 };
 
+// Converts meld indexes to actual card IDs
 const cardID_to_hand = (hand, meld) => {
   const meldArray = meld.map((index) => hand[index]);
   return meldArray;
 };
+
+// True of meld has more than two cards and less than 11
 const is_Enough_Meld = (meld) => {
   if (meld.length >= 3 && meld.length <= 10) {
     return true;
@@ -1008,6 +1021,7 @@ const is_Same_Suite = (meld) => {
   return true;
 };
 
+// True if X of a kind
 const is_Same_Card_Different_Suite = (meld) => {
   for (let i = 1; i < meld.length; i++) {
     console.log(meld[i], meld[i - 1]);
